@@ -6,3 +6,52 @@ generator client {
 datasource db {
   provider = "postgresql"
 }
+
+model User {
+  id        String    @id @default(uuid())
+  email     String    @unique
+  name      String?
+  password  String?
+  snippets  Snippet[]
+  folders   Folder[]
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+}
+
+model Snippet {
+  id         String  @id @default(uuid())
+  title      String
+  language   String
+  code       String  @db.Text
+  summary    String? @db.Text
+  isFavorite Boolean @default(false)
+
+  tags Tag[]
+
+  folder   Folder? @relation(fields: [folderId], references: [id], onDelete: SetNull)
+  folderId String?
+
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId String
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Tag {
+  id       String    @id @default(uuid())
+  name     String    @unique
+  snippets Snippet[]
+}
+
+model Folder {
+  id       String    @id @default(uuid())
+  name     String
+  snippets Snippet[]
+
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId String
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}

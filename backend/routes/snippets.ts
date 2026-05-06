@@ -18,15 +18,59 @@ const snippetSchema = z.object({
 
 const updateSnippetSchema = snippetSchema.partial().omit({ userId: true });
 
+// Get all snippets with search and filtering
 router.get(
   "/",
   asyncHandler(async (req, res) => {
+    const { q, language, folderId, tag, isFavorite, sortBy, order } = req.query;
+
+    const where: any = {};
+
+    // Keyword Search (Title, Code, Summary)
+    if (q && typeof q === "string") {
+      where.OR = [
+        { title: { contains: q, mode: "insensitive" } },
+        { code: { contains: q, mode: "insensitive" } },
+        { summary: { contains: q, mode: "insensitive" } },
+      ];
+    }
+
+    // Filters
+    if (language && typeof language === "string") {
+      where.language = language;
+    }
+
+    if (folderId && typeof folderId === "string") {
+      where.folderId = folderId === "null" ? null : folderId;
+    }
+
+    if (isFavorite === "true") {
+      where.isFavorite = true;
+    }
+
+    if (tag && typeof tag === "string") {
+      where.tags = {
+        some: {
+          name: tag,
+        },
+      };
+    }
+
+    // Sorting
+    const sortField = typeof sortBy === "string" ? sortBy : "createdAt";
+    const sortOrder = order === "asc" ? "asc" : "desc";
+
     const snippets = await prisma.snippet.findMany({
+      where,
       include: {
         tags: true,
         folder: true,
       },
+      orderBy: {
+        [sortField]: sortOrder,
+      },
     });
+
     res.send(snippets);
   }),
 );

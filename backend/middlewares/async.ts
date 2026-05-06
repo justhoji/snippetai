@@ -1,9 +1,14 @@
 import type { Request, Response, NextFunction, RequestHandler } from "express";
 
-export default function (handler: RequestHandler) {
+export default function catchAsync<
+  P = any,
+  ResBody = any,
+  ReqBody = any,
+  ReqQuery = any,
+>(handler: RequestHandler<P, ResBody, ReqBody, ReqQuery>) {
   return async (
-    req: Request,
-    res: Response,
+    req: Request<P, ResBody, ReqBody, ReqQuery>,
+    res: Response<ResBody>,
     next: NextFunction,
   ): Promise<void> => {
     try {

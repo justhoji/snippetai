@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import Layout from './components/Layout';
 import Header from './components/Header';
@@ -6,17 +6,29 @@ import SnippetList from './components/SnippetList';
 import SnippetView from './components/SnippetView';
 import SnippetForm from './components/SnippetForm';
 import { snippetService } from './services/snippetService';
+import { userService } from './services/userService';
 import type { Snippet } from './types/snippet';
 
 function App() {
-  const [selectedSnippet, setSelectedSnippet] = useState<Snippet | null>(null);
+  const [selectedSnippetId, setSelectedSnippetId] = useState<string | null>(null);
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [editingSnippet, setEditingSnippet] = useState<Snippet | null>(null);
 
-  const { data: snippets, isLoading, error } = useQuery({
+  const { data: snippets, isLoading: snippetsLoading, error: snippetsError } = useQuery({
     queryKey: ['snippets'],
     queryFn: () => snippetService.getAll(),
   });
+
+  const { data: users, isLoading: usersLoading } = useQuery({
+    queryKey: ['users'],
+    queryFn: () => userService.getAll(),
+  });
+
+  const currentUser = users?.[0] || null;
+
+  const selectedSnippet = useMemo(() => {
+    return snippets?.find(s => s.id === selectedSnippetId) || null;
+  }, [snippets, selectedSnippetId]);
 
   const handleNewSnippet = () => {
     setEditingSnippet(null);
@@ -33,16 +45,18 @@ function App() {
     setEditingSnippet(null);
   };
 
+  const isLoading = snippetsLoading || usersLoading;
+
   return (
     <Layout onNewSnippet={handleNewSnippet}>
       <div className="h-full flex flex-col">
-        <Header />
+        <Header user={currentUser} />
         
         {isLoading ? (
           <div className="flex-1 flex items-center justify-center">
             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600"></div>
           </div>
-        ) : error ? (
+        ) : snippetsError ? (
           <div className="flex-1 flex items-center justify-center text-red-500 p-8 text-center">
             <div className="max-w-md">
               <h3 className="text-lg font-bold mb-2">Connection Error</h3>
@@ -52,20 +66,21 @@ function App() {
         ) : selectedSnippet ? (
           <SnippetView 
             snippet={selectedSnippet} 
-            onBack={() => setSelectedSnippet(null)}
+            onBack={() => setSelectedSnippetId(null)}
             onEdit={handleEditSnippet}
-            onDelete={() => setSelectedSnippet(null)}
+            onDelete={() => setSelectedSnippetId(null)}
           />
         ) : (
           <SnippetList 
             snippets={snippets || []} 
-            onSelectSnippet={setSelectedSnippet}
+            onSelectSnippet={(s) => setSelectedSnippetId(s.id)}
           />
         )}
 
         {isFormOpen && (
           <SnippetForm 
             snippet={editingSnippet} 
+            userId={currentUser?.id}
             onClose={handleFormClose} 
           />
         )}

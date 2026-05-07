@@ -1,37 +1,47 @@
-import React, { useState } from 'react';
-import CodeMirror from '@uiw/react-codemirror';
-import { javascript } from '@codemirror/lang-javascript';
-import { python } from '@codemirror/lang-python';
-import { html } from '@codemirror/lang-html';
-import { sql } from '@codemirror/lang-sql';
-import { X, Save } from 'lucide-react';
-import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { snippetService } from '../services/snippetService';
-import type { Snippet, CreateSnippetInput } from '../types/snippet';
+import React, { useState } from "react";
+import CodeMirror from "@uiw/react-codemirror";
+import { javascript } from "@codemirror/lang-javascript";
+import { python } from "@codemirror/lang-python";
+import { html } from "@codemirror/lang-html";
+import { sql } from "@codemirror/lang-sql";
+import { X, Save } from "lucide-react";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { snippetService } from "../services/snippetService";
+import type { Snippet, CreateSnippetInput } from "../types/snippet";
 
 interface SnippetFormProps {
   snippet?: Snippet | null;
+  userId?: string;
   onClose: () => void;
 }
 
 const LANGUAGES = [
-  { label: 'TypeScript', value: 'typescript', extension: javascript({ typescript: true }) },
-  { label: 'JavaScript', value: 'javascript', extension: javascript() },
-  { label: 'Python', value: 'python', extension: python() },
-  { label: 'HTML', value: 'html', extension: html() },
-  { label: 'SQL', value: 'sql', extension: sql() },
+  {
+    label: "TypeScript",
+    value: "typescript",
+    extension: javascript({ typescript: true }),
+  },
+  { label: "JavaScript", value: "javascript", extension: javascript() },
+  { label: "Python", value: "python", extension: python() },
+  { label: "HTML", value: "html", extension: html() },
+  { label: "SQL", value: "sql", extension: sql() },
 ];
 
-// Placeholder User ID (In a real app, this would come from Auth)
-const TEMP_USER_ID = '00000000-0000-0000-0000-000000000000';
-
-const SnippetForm: React.FC<SnippetFormProps> = ({ snippet, onClose }) => {
+const SnippetForm: React.FC<SnippetFormProps> = ({
+  snippet,
+  userId,
+  onClose,
+}) => {
   const queryClient = useQueryClient();
-  const [title, setTitle] = useState(snippet?.title || '');
-  const [language, setLanguage] = useState(snippet?.language.toLowerCase() || 'typescript');
-  const [code, setCode] = useState(snippet?.code || '');
-  const [tags, setTags] = useState(snippet?.tags.map(t => t.name).join(', ') || '');
-  const [summary, setSummary] = useState(snippet?.summary || '');
+  const [title, setTitle] = useState(snippet?.title || "");
+  const [language, setLanguage] = useState(
+    snippet?.language.toLowerCase() || "typescript",
+  );
+  const [code, setCode] = useState(snippet?.code || "");
+  const [tags, setTags] = useState(
+    snippet?.tags.map((t) => t.name).join(", ") || "",
+  );
+  const [summary, setSummary] = useState(snippet?.summary || "");
 
   const mutation = useMutation({
     mutationFn: (data: CreateSnippetInput) => {
@@ -41,21 +51,39 @@ const SnippetForm: React.FC<SnippetFormProps> = ({ snippet, onClose }) => {
       return snippetService.create(data);
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['snippets'] });
+      queryClient.invalidateQueries({ queryKey: ["snippets"] });
       onClose();
+    },
+    onError: (error: any) => {
+      console.error("Save failed:", error);
+      alert(
+        error.response?.data ||
+          "Failed to save snippet. Please check if your user exists.",
+      );
     },
   });
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    const tagList = tags.split(',').map(t => t.trim()).filter(t => t !== '');
-    
+
+    if (!userId && !snippet?.userId) {
+      alert(
+        "Error: No active user found. Please ensure at least one user exists in the database.",
+      );
+      return;
+    }
+
+    const tagList = tags
+      .split(",")
+      .map((t) => t.trim())
+      .filter((t) => t !== "");
+
     const payload: CreateSnippetInput = {
       title,
       language,
       code,
       summary,
-      userId: snippet?.userId || TEMP_USER_ID,
+      userId: snippet?.userId || userId!,
       isFavorite: snippet?.isFavorite || false,
       folderId: snippet?.folderId || null,
       tags: tagList,
@@ -64,7 +92,8 @@ const SnippetForm: React.FC<SnippetFormProps> = ({ snippet, onClose }) => {
     mutation.mutate(payload);
   };
 
-  const selectedLang = LANGUAGES.find(l => l.value === language) || LANGUAGES[0];
+  const selectedLang =
+    LANGUAGES.find((l) => l.value === language) || LANGUAGES[0];
 
   return (
     <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
@@ -72,9 +101,9 @@ const SnippetForm: React.FC<SnippetFormProps> = ({ snippet, onClose }) => {
         {/* Header */}
         <div className="px-6 py-4 border-b border-gray-100 flex items-center justify-between bg-gray-50/50">
           <h2 className="text-xl font-bold text-gray-900">
-            {snippet ? 'Edit Snippet' : 'Create New Snippet'}
+            {snippet ? "Edit Snippet" : "Create New Snippet"}
           </h2>
-          <button 
+          <button
             onClick={onClose}
             className="p-2 hover:bg-gray-200 rounded-full transition-colors"
           >
@@ -83,10 +112,15 @@ const SnippetForm: React.FC<SnippetFormProps> = ({ snippet, onClose }) => {
         </div>
 
         {/* Form Body */}
-        <form onSubmit={handleSubmit} className="flex-1 overflow-auto p-6 space-y-6">
+        <form
+          onSubmit={handleSubmit}
+          className="flex-1 overflow-auto p-6 space-y-6"
+        >
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div className="space-y-2">
-              <label className="text-sm font-semibold text-gray-700">Title</label>
+              <label className="text-sm font-semibold text-gray-700">
+                Title
+              </label>
               <input
                 type="text"
                 required
@@ -97,14 +131,18 @@ const SnippetForm: React.FC<SnippetFormProps> = ({ snippet, onClose }) => {
               />
             </div>
             <div className="space-y-2">
-              <label className="text-sm font-semibold text-gray-700">Language</label>
+              <label className="text-sm font-semibold text-gray-700">
+                Language
+              </label>
               <select
                 value={language}
                 onChange={(e) => setLanguage(e.target.value)}
                 className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none transition-all bg-white"
               >
                 {LANGUAGES.map((l) => (
-                  <option key={l.value} value={l.value}>{l.label}</option>
+                  <option key={l.value} value={l.value}>
+                    {l.label}
+                  </option>
                 ))}
               </select>
             </div>
@@ -125,7 +163,9 @@ const SnippetForm: React.FC<SnippetFormProps> = ({ snippet, onClose }) => {
           </div>
 
           <div className="space-y-2">
-            <label className="text-sm font-semibold text-gray-700">Tags (comma separated)</label>
+            <label className="text-sm font-semibold text-gray-700">
+              Tags (comma separated)
+            </label>
             <input
               type="text"
               value={tags}
@@ -136,7 +176,9 @@ const SnippetForm: React.FC<SnippetFormProps> = ({ snippet, onClose }) => {
           </div>
 
           <div className="space-y-2">
-            <label className="text-sm font-semibold text-gray-700">AI Summary (Optional)</label>
+            <label className="text-sm font-semibold text-gray-700">
+              AI Summary (Optional)
+            </label>
             <textarea
               value={summary}
               onChange={(e) => setSummary(e.target.value)}
@@ -161,7 +203,7 @@ const SnippetForm: React.FC<SnippetFormProps> = ({ snippet, onClose }) => {
             className="px-6 py-2 bg-indigo-600 text-white font-bold rounded-lg hover:bg-indigo-700 transition-all flex items-center gap-2 disabled:opacity-50"
           >
             <Save className="w-4 h-4" />
-            {mutation.isPending ? 'Saving...' : 'Save Snippet'}
+            {mutation.isPending ? "Saving..." : "Save Snippet"}
           </button>
         </div>
       </div>

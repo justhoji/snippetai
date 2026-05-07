@@ -12,6 +12,7 @@ function App() {
     isFormOpen, 
     editingSnippet, 
     searchQuery, 
+    isSemanticSearch,
     filteredSnippets, 
     currentUser,
     folders,
@@ -25,6 +26,7 @@ function App() {
   const { 
     setSelectedSnippetId, 
     setSearchQuery,
+    setIsSemanticSearch,
     setFilterType,
     setActiveId,
     handleNewSnippet, 
@@ -55,6 +57,8 @@ function App() {
           user={currentUser} 
           searchQuery={searchQuery}
           onSearchChange={setSearchQuery}
+          isSemanticSearch={isSemanticSearch}
+          onSemanticToggle={setIsSemanticSearch}
         />
         
         {isLoading ? (

@@ -26,6 +26,7 @@ const SnippetList: React.FC<SnippetListProps> = ({ snippets, title = 'All Snippe
                   title={snippet.title}
                   language={snippet.language}
                   summary={snippet.summary || ''}
+                  tags={snippet.tags}
                 />
               </div>
             ))}

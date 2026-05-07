@@ -13,6 +13,7 @@ function App() {
   const [selectedSnippetId, setSelectedSnippetId] = useState<string | null>(null);
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [editingSnippet, setEditingSnippet] = useState<Snippet | null>(null);
+  const [searchQuery, setSearchQuery] = useState('');
 
   const { data: snippets, isLoading: snippetsLoading, error: snippetsError } = useQuery({
     queryKey: ['snippets'],
@@ -25,6 +26,19 @@ function App() {
   });
 
   const currentUser = users?.[0] || null;
+
+  const filteredSnippets = useMemo(() => {
+    if (!snippets) return [];
+    if (!searchQuery.trim()) return snippets;
+
+    const query = searchQuery.toLowerCase();
+    return snippets.filter(s => 
+      s.title.toLowerCase().includes(query) ||
+      s.code.toLowerCase().includes(query) ||
+      s.language.toLowerCase().includes(query) ||
+      s.tags.some(t => t.name.toLowerCase().includes(query))
+    );
+  }, [snippets, searchQuery]);
 
   const selectedSnippet = useMemo(() => {
     return snippets?.find(s => s.id === selectedSnippetId) || null;
@@ -50,7 +64,11 @@ function App() {
   return (
     <Layout onNewSnippet={handleNewSnippet}>
       <div className="h-full flex flex-col">
-        <Header user={currentUser} />
+        <Header 
+          user={currentUser} 
+          searchQuery={searchQuery}
+          onSearchChange={setSearchQuery}
+        />
         
         {isLoading ? (
           <div className="flex-1 flex items-center justify-center">
@@ -72,7 +90,7 @@ function App() {
           />
         ) : (
           <SnippetList 
-            snippets={snippets || []} 
+            snippets={filteredSnippets} 
             onSelectSnippet={(s) => setSelectedSnippetId(s.id)}
           />
         )}

@@ -8,9 +8,11 @@ interface User {
 
 interface HeaderProps {
   user: User | null;
+  searchQuery: string;
+  onSearchChange: (query: string) => void;
 }
 
-const Header: React.FC<HeaderProps> = ({ user }) => {
+const Header: React.FC<HeaderProps> = ({ user, searchQuery, onSearchChange }) => {
   const getInitials = (name: string | null, email: string) => {
     if (name) return name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2);
     return email.slice(0, 2).toUpperCase();
@@ -22,6 +24,8 @@ const Header: React.FC<HeaderProps> = ({ user }) => {
         <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
         <input
           type="text"
+          value={searchQuery}
+          onChange={(e) => onSearchChange(e.target.value)}
           placeholder="Search snippets (Cmd + K)..."
           className="w-full bg-gray-50 border-none rounded-lg py-2 pl-10 pr-4 text-sm focus:ring-2 focus:ring-indigo-500 transition-all outline-none"
         />

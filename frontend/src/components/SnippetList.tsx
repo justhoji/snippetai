@@ -1,14 +1,6 @@
 import React from 'react';
 import SnippetCard from './SnippetCard';
-
-export interface Snippet {
-  id: string;
-  title: string;
-  language: string;
-  summary: string;
-  code: string;
-  tags?: string[];
-}
+import type { Snippet } from '../types/snippet';
 
 interface SnippetListProps {
   snippets: Snippet[];
@@ -22,17 +14,23 @@ const SnippetList: React.FC<SnippetListProps> = ({ snippets, title = 'All Snippe
       <div className="max-w-5xl mx-auto">
         <h2 className="text-2xl font-bold mb-6 text-gray-900">{title}</h2>
         
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {snippets.map((snippet) => (
-            <div key={snippet.id} onClick={() => onSelectSnippet?.(snippet)}>
-              <SnippetCard 
-                title={snippet.title}
-                language={snippet.language}
-                summary={snippet.summary}
-              />
-            </div>
-          ))}
-        </div>
+        {snippets.length === 0 ? (
+          <div className="text-center py-12">
+            <p className="text-gray-500">No snippets found. Create your first one!</p>
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {snippets.map((snippet) => (
+              <div key={snippet.id} onClick={() => onSelectSnippet?.(snippet)}>
+                <SnippetCard 
+                  title={snippet.title}
+                  language={snippet.language}
+                  summary={snippet.summary || ''}
+                />
+              </div>
+            ))}
+          </div>
+        )}
       </div>
     </div>
   );

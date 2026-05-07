@@ -1,6 +1,6 @@
 import React from 'react';
 import { ArrowLeft, Star, Edit, Trash, Copy } from 'lucide-react';
-import type { Snippet } from './SnippetList';
+import type { Snippet } from '../types/snippet';
 import CodeBlock from './CodeBlock';
 
 interface SnippetViewProps {
@@ -37,14 +37,14 @@ const SnippetView: React.FC<SnippetViewProps> = ({ snippet, onBack }) => {
             </div>
             <div className="flex flex-wrap gap-2">
               {snippet.tags?.map(tag => (
-                <span key={tag} className="text-xs text-gray-400 bg-gray-50 px-2 py-1 rounded">#{tag}</span>
+                <span key={tag.id} className="text-xs text-gray-400 bg-gray-50 px-2 py-1 rounded">#{tag.name}</span>
               ))}
             </div>
           </div>
 
           <div className="flex items-center gap-2">
-            <button className="p-2 text-gray-400 hover:text-yellow-500 transition-colors rounded-lg hover:bg-gray-50">
-              <Star className="w-5 h-5" />
+            <button className={`p-2 transition-colors rounded-lg hover:bg-gray-50 ${snippet.isFavorite ? 'text-yellow-500' : 'text-gray-400 hover:text-yellow-500'}`}>
+              <Star className={`w-5 h-5 ${snippet.isFavorite ? 'fill-current' : ''}`} />
             </button>
             <button className="p-2 text-gray-400 hover:text-indigo-600 transition-colors rounded-lg hover:bg-gray-50">
               <Edit className="w-5 h-5" />

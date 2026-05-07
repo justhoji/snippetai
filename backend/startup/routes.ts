@@ -4,6 +4,7 @@ import snippets from "../routes/snippets";
 import users from "../routes/users";
 import folders from "../routes/folders";
 import tags from "../routes/tags";
+import ai from "../routes/ai";
 import cors from "cors";
 
 export default function (app: express.Application) {
@@ -13,5 +14,6 @@ export default function (app: express.Application) {
   app.use("/api/users", users);
   app.use("/api/folders", folders);
   app.use("/api/tags", tags);
+  app.use("/api/ai", ai);
   app.use(error);
 }

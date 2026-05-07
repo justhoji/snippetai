@@ -1,5 +1,5 @@
 import React from 'react';
-import { ArrowLeft, Star, Edit, Trash, Copy } from 'lucide-react';
+import { ArrowLeft, Star, Edit, Trash, Copy, Sparkles, MessageSquare } from 'lucide-react';
 import type { Snippet } from '../types/snippet';
 import CodeBlock from './CodeBlock';
 import { useSnippetView } from '../hooks/useSnippetView';
@@ -12,7 +12,8 @@ interface SnippetViewProps {
 }
 
 const SnippetView: React.FC<SnippetViewProps> = ({ snippet, onBack, onEdit, onDelete }) => {
-  const { actions, isDeleting } = useSnippetView({ snippet, onDelete });
+  const { state, actions, isDeleting } = useSnippetView({ snippet, onDelete });
+  const { explanation, isAiLoading } = state;
 
   return (
     <div className="flex-1 p-8 bg-white">
@@ -31,7 +32,10 @@ const SnippetView: React.FC<SnippetViewProps> = ({ snippet, onBack, onEdit, onDe
           onEdit={() => onEdit(snippet)}
           onDelete={actions.handleDelete}
           onToggleFavorite={actions.handleToggleFavorite}
+          onExplain={actions.handleExplain}
           isDeleting={isDeleting}
+          isAiLoading={isAiLoading}
+          hasExplanation={!!explanation}
         />
 
         <div className="mb-8 relative group">
@@ -45,7 +49,13 @@ const SnippetView: React.FC<SnippetViewProps> = ({ snippet, onBack, onEdit, onDe
           <CodeBlock code={snippet.code} language={snippet.language} />
         </div>
 
-        <SummarySection summary={snippet.summary} />
+        <div className="space-y-6">
+          <SummarySection summary={snippet.summary} />
+          
+          {explanation && (
+            <ExplanationSection explanation={explanation} />
+          )}
+        </div>
       </div>
     </div>
   );
@@ -56,8 +66,11 @@ const ViewHeader: React.FC<{
   onEdit: () => void; 
   onDelete: () => void;
   onToggleFavorite: () => void;
+  onExplain: () => void;
   isDeleting: boolean;
-}> = ({ snippet, onEdit, onDelete, onToggleFavorite, isDeleting }) => (
+  isAiLoading: boolean;
+  hasExplanation: boolean;
+}> = ({ snippet, onEdit, onDelete, onToggleFavorite, onExplain, isDeleting, isAiLoading, hasExplanation }) => (
   <div className="flex justify-between items-start mb-8">
     <div>
       <div className="flex items-center gap-3 mb-2">
@@ -74,6 +87,21 @@ const ViewHeader: React.FC<{
     </div>
 
     <div className="flex items-center gap-2">
+      <button 
+        onClick={onExplain}
+        disabled={isAiLoading}
+        className={`flex items-center gap-2 px-4 py-2 rounded-lg font-bold transition-all ${
+          hasExplanation 
+            ? 'bg-indigo-50 text-indigo-600 border border-indigo-100' 
+            : 'bg-indigo-600 text-white hover:bg-indigo-700 shadow-sm'
+        } disabled:opacity-50`}
+      >
+        <Sparkles className={`w-4 h-4 ${isAiLoading ? 'animate-spin' : ''}`} />
+        {isAiLoading ? 'Analyzing...' : hasExplanation ? 'Explanation Active' : 'Explain Code'}
+      </button>
+
+      <div className="w-px h-8 bg-gray-100 mx-2" />
+
       <button 
         onClick={onToggleFavorite}
         className={`p-2 transition-colors rounded-lg hover:bg-gray-50 ${snippet.isFavorite ? 'text-yellow-500' : 'text-gray-400 hover:text-yellow-500'}`}
@@ -99,10 +127,25 @@ const ViewHeader: React.FC<{
 
 const SummarySection: React.FC<{ summary: string | null }> = ({ summary }) => (
   <div className="bg-gray-50 rounded-xl p-6 border border-gray-100">
-    <h3 className="text-sm font-bold text-gray-900 mb-2 uppercase tracking-tight">AI Summary</h3>
+    <div className="flex items-center gap-2 mb-3">
+      <MessageSquare className="w-4 h-4 text-indigo-600" />
+      <h3 className="text-xs font-bold text-gray-900 uppercase tracking-tight">AI Summary</h3>
+    </div>
     <p className="text-gray-600 leading-relaxed">
       {summary || "No summary available for this snippet."}
     </p>
+  </div>
+);
+
+const ExplanationSection: React.FC<{ explanation: string }> = ({ explanation }) => (
+  <div className="bg-indigo-50/30 rounded-xl p-6 border border-indigo-100 animate-in fade-in slide-in-from-top-4 duration-500">
+    <div className="flex items-center gap-2 mb-4">
+      <Sparkles className="w-4 h-4 text-indigo-600" />
+      <h3 className="text-sm font-bold text-gray-900 uppercase tracking-tight">Line-by-Line Explanation</h3>
+    </div>
+    <div className="prose prose-sm max-w-none text-gray-700 whitespace-pre-wrap leading-relaxed">
+      {explanation}
+    </div>
   </div>
 );
 

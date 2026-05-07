@@ -1,5 +1,7 @@
+import { useState } from 'react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { snippetService } from '../services/snippetService';
+import { aiService } from '../services/aiService';
 import type { Snippet } from '../types/snippet';
 
 interface UseSnippetViewProps {
@@ -9,6 +11,8 @@ interface UseSnippetViewProps {
 
 export const useSnippetView = ({ snippet, onDelete }: UseSnippetViewProps) => {
   const queryClient = useQueryClient();
+  const [explanation, setExplanation] = useState<string | null>(null);
+  const [isAiLoading, setIsAiLoading] = useState(false);
 
   const deleteMutation = useMutation({
     mutationFn: () => snippetService.delete(snippet.id),
@@ -35,7 +39,6 @@ export const useSnippetView = ({ snippet, onDelete }: UseSnippetViewProps) => {
 
   const handleCopy = () => {
     navigator.clipboard.writeText(snippet.code);
-    // Future: Use a proper toast library here
   };
 
   const handleDelete = () => {
@@ -48,11 +51,32 @@ export const useSnippetView = ({ snippet, onDelete }: UseSnippetViewProps) => {
     toggleFavoriteMutation.mutate();
   };
 
+  const handleExplain = async () => {
+    if (explanation) {
+      setExplanation(null);
+      return;
+    }
+
+    setIsAiLoading(true);
+    try {
+      const result = await aiService.explainCode(snippet.code, snippet.language);
+      setExplanation(result);
+    } catch (error) {
+      console.error('AI Explanation failed:', error);
+      alert('Failed to generate explanation. Check your OpenAI API key.');
+    } finally {
+      setIsAiLoading(false);
+    }
+  };
+
   return {
+    state: { explanation, isAiLoading },
     actions: {
       handleCopy,
       handleDelete,
       handleToggleFavorite,
+      handleExplain,
+      clearExplanation: () => setExplanation(null),
     },
     isDeleting: deleteMutation.isPending,
     isUpdatingFavorite: toggleFavoriteMutation.isPending,

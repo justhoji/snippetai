@@ -1,6 +1,6 @@
 import React from 'react';
 import CodeMirror from '@uiw/react-codemirror';
-import { X, Save } from 'lucide-react';
+import { X, Save, Sparkles, Wand2 } from 'lucide-react';
 import { useSnippetForm } from '../hooks/useSnippetForm';
 import { LANGUAGES, getLanguageExtension } from '../constants/languages';
 import type { Snippet, Folder } from '../types/snippet';
@@ -14,8 +14,18 @@ interface SnippetFormProps {
 
 const SnippetForm: React.FC<SnippetFormProps> = ({ snippet, userId, folders, onClose }) => {
   const { state, handlers, isPending } = useSnippetForm({ snippet, userId, onClose });
-  const { title, language, code, tags, summary, folderId } = state;
-  const { setTitle, setLanguage, setCode, setTags, setSummary, setFolderId, handleSubmit } = handlers;
+  const { title, language, code, tags, summary, folderId, isAiLoading } = state;
+  const { 
+    setTitle, 
+    setLanguage, 
+    setCode, 
+    setTags, 
+    setSummary, 
+    setFolderId, 
+    handleSubmit,
+    handleAiSuggest,
+    handleLanguageDetect
+  } = handlers;
 
   return (
     <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
@@ -39,15 +49,26 @@ const SnippetForm: React.FC<SnippetFormProps> = ({ snippet, userId, folders, onC
             </FormGroup>
 
             <FormGroup label="Language">
-              <select
-                value={language}
-                onChange={(e) => setLanguage(e.target.value)}
-                className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none transition-all bg-white"
-              >
-                {LANGUAGES.map((l) => (
-                  <option key={l.value} value={l.value}>{l.label}</option>
-                ))}
-              </select>
+              <div className="flex gap-2">
+                <select
+                  value={language}
+                  onChange={(e) => setLanguage(e.target.value)}
+                  className="flex-1 px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none transition-all bg-white"
+                >
+                  {LANGUAGES.map((l) => (
+                    <option key={l.value} value={l.value}>{l.label}</option>
+                  ))}
+                </select>
+                <button
+                  type="button"
+                  onClick={handleLanguageDetect}
+                  disabled={isAiLoading || !code}
+                  className="px-3 py-2 border border-gray-200 rounded-lg hover:bg-gray-50 text-gray-500 transition-colors disabled:opacity-50"
+                  title="Auto-detect Language"
+                >
+                  <Wand2 className={`w-4 h-4 ${isAiLoading ? 'animate-pulse' : ''}`} />
+                </button>
+              </div>
             </FormGroup>
           </div>
 
@@ -89,7 +110,20 @@ const SnippetForm: React.FC<SnippetFormProps> = ({ snippet, userId, folders, onC
             </div>
           </FormGroup>
 
-          <FormGroup label="AI Summary (Optional)">
+          <FormGroup 
+            label="AI Summary (Optional)" 
+            action={
+              <button
+                type="button"
+                onClick={handleAiSuggest}
+                disabled={isAiLoading || !code}
+                className="flex items-center gap-1.5 text-xs font-bold text-indigo-600 hover:text-indigo-700 transition-colors disabled:opacity-50"
+              >
+                <Sparkles className={`w-3.5 h-3.5 ${isAiLoading ? 'animate-spin' : ''}`} />
+                {isAiLoading ? 'Analyzing...' : 'Suggest Meta'}
+              </button>
+            }
+          >
             <textarea
               value={summary || ''}
               onChange={(e) => setSummary(e.target.value)}
@@ -111,9 +145,11 @@ const SnippetForm: React.FC<SnippetFormProps> = ({ snippet, userId, folders, onC
 
 const FormHeader: React.FC<{ isEdit: boolean; onClose: () => void }> = ({ isEdit, onClose }) => (
   <div className="px-6 py-4 border-b border-gray-100 flex items-center justify-between bg-gray-50/50">
-    <h2 className="text-xl font-bold text-gray-900">
-      {isEdit ? 'Edit Snippet' : 'Create New Snippet'}
-    </h2>
+    <div className="flex items-center gap-2">
+      <h2 className="text-xl font-bold text-gray-900">
+        {isEdit ? 'Edit Snippet' : 'Create New Snippet'}
+      </h2>
+    </div>
     <button 
       onClick={onClose}
       className="p-2 hover:bg-gray-200 rounded-full transition-colors"
@@ -143,9 +179,16 @@ const FormFooter: React.FC<{ onCancel: () => void; isPending: boolean; onSubmit:
   </div>
 );
 
-const FormGroup: React.FC<{ label: string; children: React.ReactNode }> = ({ label, children }) => (
+const FormGroup: React.FC<{ 
+  label: string; 
+  children: React.ReactNode; 
+  action?: React.ReactNode 
+}> = ({ label, children, action }) => (
   <div className="space-y-2">
-    <label className="text-sm font-semibold text-gray-700">{label}</label>
+    <div className="flex items-center justify-between">
+      <label className="text-sm font-semibold text-gray-700">{label}</label>
+      {action}
+    </div>
     {children}
   </div>
 );

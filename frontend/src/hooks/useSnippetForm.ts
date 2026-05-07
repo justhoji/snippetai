@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { snippetService } from '../services/snippetService';
+import { aiService } from '../services/aiService';
 import type { Snippet, CreateSnippetInput } from '../types/snippet';
 
 interface UseSnippetFormProps {
@@ -17,6 +18,7 @@ export const useSnippetForm = ({ snippet, userId, onClose }: UseSnippetFormProps
   const [tags, setTags] = useState(snippet?.tags.map(t => t.name).join(', ') || '');
   const [summary, setSummary] = useState(snippet?.summary || '');
   const [folderId, setFolderId] = useState<string | null>(snippet?.folderId || null);
+  const [isAiLoading, setIsAiLoading] = useState(false);
 
   const mutation = useMutation({
     mutationFn: (data: CreateSnippetInput) => {
@@ -35,6 +37,38 @@ export const useSnippetForm = ({ snippet, userId, onClose }: UseSnippetFormProps
       alert(message);
     }
   });
+
+  const handleAiSuggest = async () => {
+    if (!code) {
+      alert('Please enter some code first.');
+      return;
+    }
+    
+    setIsAiLoading(true);
+    try {
+      const suggestions = await aiService.suggestMetadata(code, language);
+      setSummary(suggestions.summary);
+      setTags(suggestions.tags.join(', '));
+    } catch (error) {
+      console.error('AI Suggest failed:', error);
+      alert('AI failed to generate suggestions. Ensure your OPENAI_API_KEY is configured.');
+    } finally {
+      setIsAiLoading(false);
+    }
+  };
+
+  const handleLanguageDetect = async () => {
+    if (!code) return;
+    setIsAiLoading(true);
+    try {
+      const detected = await aiService.detectLanguage(code);
+      setLanguage(detected);
+    } catch (error) {
+      console.error('Language detection failed:', error);
+    } finally {
+      setIsAiLoading(false);
+    }
+  };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -61,8 +95,18 @@ export const useSnippetForm = ({ snippet, userId, onClose }: UseSnippetFormProps
   };
 
   return {
-    state: { title, language, code, tags, summary, folderId },
-    handlers: { setTitle, setLanguage, setCode, setTags, setSummary, setFolderId, handleSubmit },
+    state: { title, language, code, tags, summary, folderId, isAiLoading },
+    handlers: { 
+      setTitle, 
+      setLanguage, 
+      setCode, 
+      setTags, 
+      setSummary, 
+      setFolderId, 
+      handleSubmit,
+      handleAiSuggest,
+      handleLanguageDetect
+    },
     isPending: mutation.isPending,
   };
 };

@@ -26,7 +26,7 @@ const Layout: React.FC<LayoutProps> = ({
   isCreatingFolder
 }) => {
   return (
-    <div className="flex min-h-screen bg-white text-gray-900">
+    <div className="flex h-screen bg-white text-gray-900 overflow-hidden">
       <Sidebar 
         folders={folders}
         tags={tags}
@@ -37,8 +37,10 @@ const Layout: React.FC<LayoutProps> = ({
         onCreateFolder={onCreateFolder}
         isCreatingFolder={isCreatingFolder}
       />
-      <main className="flex-1 overflow-auto">
-        {children}
+      <main className="flex-1 flex flex-col min-w-0 overflow-hidden">
+        <div className="flex-1 overflow-y-auto">
+          {children}
+        </div>
       </main>
     </div>
   );

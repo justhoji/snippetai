@@ -15,8 +15,8 @@ const SnippetView: React.FC<SnippetViewProps> = ({ snippet, onBack, onEdit, onDe
   const { actions, isDeleting } = useSnippetView({ snippet, onDelete });
 
   return (
-    <div className="flex-1 p-8 bg-white min-h-screen">
-      <div className="max-w-5xl mx-auto">
+    <div className="flex-1 p-8 bg-white">
+      <div className="max-w-5xl mx-auto pb-12">
         {/* Back Button */}
         <button 
           onClick={onBack}

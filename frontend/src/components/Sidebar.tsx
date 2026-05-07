@@ -1,6 +1,10 @@
 import { Home, Folder, Tag, Star, Plus } from 'lucide-react';
 
-const Sidebar = () => {
+interface SidebarProps {
+  onNewSnippet: () => void;
+}
+
+const Sidebar: React.FC<SidebarProps> = ({ onNewSnippet }) => {
   const navItems = [
     { icon: Home, label: 'All Snippets', active: true },
     { icon: Star, label: 'Favorites', active: false },
@@ -36,7 +40,10 @@ const Sidebar = () => {
       </nav>
 
       <div className="p-4 border-t border-gray-200">
-        <button className="w-full flex items-center justify-center gap-2 bg-indigo-600 text-white px-4 py-2 rounded-md hover:bg-indigo-700 transition-colors text-sm font-medium">
+        <button 
+          onClick={onNewSnippet}
+          className="w-full flex items-center justify-center gap-2 bg-indigo-600 text-white px-4 py-2 rounded-md hover:bg-indigo-700 transition-colors text-sm font-medium"
+        >
           <Plus className="w-4 h-4" />
           New Snippet
         </button>

@@ -4,32 +4,33 @@ This plan breaks the project into logical phases to move from setup to a fully f
 
 ## Phase 1: Foundation & Project Setup
 
-- [ ] **1.1 Workspace Initialization:**
+- [x] **1.1 Workspace Initialization:**
   - Create a monorepo structure (or separate `/backend` and `/frontend` folders).
   - Initialize `git` repository.
-- [ ] **1.2 Backend Setup:**
+- [x] **1.2 Backend Setup:**
   - Initialize Node.js with TypeScript.
   - Install dependencies (Express, Prisma, Zod, etc.).
-- [ ] **1.3 Database Modeling:**
+- [x] **1.3 Database Modeling:**
   - Define Prisma schema (User, Snippet, Folder, Tag).
   - Run initial migrations and verify database connection.
-- [ ] **1.4 Frontend Setup:**
+- [x] **1.4 Frontend Setup:**
   - Initialize React with Vite and TypeScript.
   - Install Tailwind CSS and Lucide React.
 
 ## Phase 2: Core Snippet Management (CRUD)
 
-- [ ] **2.1 Backend API - CRUD:**
+- [x] **2.1 Backend API - CRUD:**
   - Implement routes for creating, reading, updating, and deleting snippets.
   - Add basic validation using Zod.
-- [ ] **2.2 Frontend UI - Basic Layout:**
+- [x] **2.2 Frontend UI - Basic Layout:**
   - Build a sidebar for navigation (Collections/Folders).
   - Build a snippet list view and a detailed view.
-- [ ] **2.3 Snippet Editor:**
+- [x] **2.3 Snippet Editor:**
   - Integrate a code editor component (e.g., CodeMirror or Monaco).
   - Implement "Create" and "Edit" forms on the frontend.
-- [ ] **2.4 Syntax Highlighting:**
+- [x] **2.4 Syntax Highlighting:**
   - Implement Shiki for high-quality code rendering in the view mode.
+
 
 ## Phase 3: Search & Organization
 

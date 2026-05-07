@@ -3,6 +3,14 @@ export interface Tag {
   name: string;
 }
 
+export interface Folder {
+  id: string;
+  name: string;
+  userId: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
 export interface Snippet {
   id: string;
   title: string;

@@ -13,20 +13,39 @@ function App() {
     editingSnippet, 
     searchQuery, 
     filteredSnippets, 
-    currentUser, 
+    currentUser,
+    folders,
+    tags,
+    filterType,
+    activeId,
     isLoading, 
     snippetsError 
   } = state;
   const { 
     setSelectedSnippetId, 
-    setSearchQuery, 
+    setSearchQuery,
+    setFilterType,
+    setActiveId,
     handleNewSnippet, 
     handleEditSnippet, 
     handleFormClose 
   } = handlers;
 
+  const handleFilterChange = (type: 'all' | 'favorites' | 'folder' | 'tag', id: string | null) => {
+    setFilterType(type);
+    setActiveId(id);
+    setSelectedSnippetId(null); // Return to list view when changing filters
+  };
+
   return (
-    <Layout onNewSnippet={handleNewSnippet}>
+    <Layout 
+      onNewSnippet={handleNewSnippet}
+      folders={folders || []}
+      tags={tags || []}
+      activeFilter={filterType}
+      activeId={activeId}
+      onFilterChange={handleFilterChange}
+    >
       <div className="h-full flex flex-col">
         <Header 
           user={currentUser} 

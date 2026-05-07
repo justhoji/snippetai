@@ -1,55 +1,55 @@
-import React, { useEffect, useState } from 'react'
+import Layout from "./components/Layout";
+import Header from "./components/Header";
+import SnippetList, { type Snippet } from "./components/SnippetList";
 
 function App() {
-  const [status, setStatus] = useState<'loading' | 'online' | 'offline'>('loading');
-
-  useEffect(() => {
-    fetch('http://localhost:3001/health')
-      .then(res => res.ok ? setStatus('online') : setStatus('offline'))
-      .catch(() => setStatus('offline'));
-  }, []);
+  const snippets: Snippet[] = [
+    {
+      id: "1",
+      title: "Fetch API Wrapper",
+      language: "TypeScript",
+      summary: "A clean wrapper for the Fetch API with error handling.",
+    },
+    {
+      id: "2",
+      title: "Tailwind Button",
+      language: "CSS",
+      summary: "Reusable button styles for Tailwind CSS.",
+    },
+    {
+      id: "3",
+      title: "Python Logger",
+      language: "Python",
+      summary: "A simple logging configuration for Python projects.",
+    },
+    {
+      id: "4",
+      title: "React Hook",
+      language: "TypeScript",
+      summary: "A custom hook for managing local storage.",
+    },
+    {
+      id: "5",
+      title: "Express Middleware",
+      language: "JavaScript",
+      summary: "Authentication middleware for Express.js.",
+    },
+    {
+      id: "6",
+      title: "SQL Migration",
+      language: "SQL",
+      summary: "A migration script for adding user roles.",
+    },
+  ];
 
   return (
-    <div className="min-h-screen bg-gray-50 flex flex-col items-center justify-center p-4">
-      <header className="text-center space-y-4">
-        <div className="flex items-center justify-center gap-2 mb-2">
-          <span className={`h-3 w-3 rounded-full ${
-            status === 'online' ? 'bg-green-500 shadow-[0_0_8px_rgba(34,197,94,0.6)]' : 
-            status === 'offline' ? 'bg-red-500' : 'bg-gray-300 animate-pulse'
-          }`} />
-          <span className="text-xs font-medium text-gray-500 uppercase tracking-wider">
-            Backend: {status}
-          </span>
-        </div>
-        <h1 className="text-4xl font-bold text-gray-900 tracking-tight sm:text-6xl">
-          AI Powered Code Vault
-        </h1>
-        <p className="text-lg text-gray-600 max-w-2xl">
-          Your personal second brain for code snippets. Store, search, and explain code with AI.
-        </p>
-      </header>
-      
-      <main className="mt-10 w-full max-w-4xl">
-        <div className="bg-white shadow-sm border border-gray-200 rounded-xl p-8 text-center">
-          <p className="text-gray-500 italic">
-            Ready to build? Start by adding your first snippet or setting up the database.
-          </p>
-          <div className="mt-6 flex justify-center gap-4">
-            <button className="px-5 py-2.5 bg-indigo-600 text-white font-medium rounded-lg hover:bg-indigo-700 transition-colors">
-              New Snippet
-            </button>
-            <button className="px-5 py-2.5 bg-white text-gray-700 font-medium border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors">
-              View Vault
-            </button>
-          </div>
-        </div>
-      </main>
-
-      <footer className="mt-20 text-gray-400 text-sm">
-        Built with Bun, Express, React & Tailwind
-      </footer>
-    </div>
-  )
+    <Layout>
+      <div className="h-full flex flex-col">
+        <Header />
+        <SnippetList snippets={snippets} />
+      </div>
+    </Layout>
+  );
 }
 
-export default App
+export default App;

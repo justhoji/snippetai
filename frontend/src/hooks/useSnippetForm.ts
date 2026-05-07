@@ -16,6 +16,7 @@ export const useSnippetForm = ({ snippet, userId, onClose }: UseSnippetFormProps
   const [code, setCode] = useState(snippet?.code || '');
   const [tags, setTags] = useState(snippet?.tags.map(t => t.name).join(', ') || '');
   const [summary, setSummary] = useState(snippet?.summary || '');
+  const [folderId, setFolderId] = useState<string | null>(snippet?.folderId || null);
 
   const mutation = useMutation({
     mutationFn: (data: CreateSnippetInput) => {
@@ -52,7 +53,7 @@ export const useSnippetForm = ({ snippet, userId, onClose }: UseSnippetFormProps
       summary,
       userId: snippet?.userId || userId!,
       isFavorite: snippet?.isFavorite || false,
-      folderId: snippet?.folderId || null,
+      folderId,
       tags: tagList,
     };
 
@@ -60,8 +61,8 @@ export const useSnippetForm = ({ snippet, userId, onClose }: UseSnippetFormProps
   };
 
   return {
-    state: { title, language, code, tags, summary },
-    handlers: { setTitle, setLanguage, setCode, setTags, setSummary, handleSubmit },
+    state: { title, language, code, tags, summary, folderId },
+    handlers: { setTitle, setLanguage, setCode, setTags, setSummary, setFolderId, handleSubmit },
     isPending: mutation.isPending,
   };
 };

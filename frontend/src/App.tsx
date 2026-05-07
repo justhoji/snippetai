@@ -19,7 +19,8 @@ function App() {
     filterType,
     activeId,
     isLoading, 
-    snippetsError 
+    snippetsError,
+    isCreatingFolder
   } = state;
   const { 
     setSelectedSnippetId, 
@@ -28,7 +29,8 @@ function App() {
     setActiveId,
     handleNewSnippet, 
     handleEditSnippet, 
-    handleFormClose 
+    handleFormClose,
+    handleCreateFolder
   } = handlers;
 
   const handleFilterChange = (type: 'all' | 'favorites' | 'folder' | 'tag', id: string | null) => {
@@ -45,6 +47,8 @@ function App() {
       activeFilter={filterType}
       activeId={activeId}
       onFilterChange={handleFilterChange}
+      onCreateFolder={handleCreateFolder}
+      isCreatingFolder={isCreatingFolder}
     >
       <div className="h-full flex flex-col">
         <Header 
@@ -82,6 +86,7 @@ function App() {
           <SnippetForm 
             snippet={editingSnippet} 
             userId={currentUser?.id}
+            folders={folders || []}
             onClose={handleFormClose} 
           />
         )}

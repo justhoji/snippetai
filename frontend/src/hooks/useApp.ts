@@ -1,5 +1,5 @@
 import { useState, useMemo } from 'react';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { snippetService } from '../services/snippetService';
 import { userService } from '../services/userService';
 import { folderService } from '../services/folderService';
@@ -9,6 +9,7 @@ import type { Snippet } from '../types/snippet';
 export type FilterType = 'all' | 'favorites' | 'folder' | 'tag';
 
 export const useApp = () => {
+  const queryClient = useQueryClient();
   const [selectedSnippetId, setSelectedSnippetId] = useState<string | null>(null);
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [editingSnippet, setEditingSnippet] = useState<Snippet | null>(null);
@@ -37,6 +38,17 @@ export const useApp = () => {
   const { data: tags, isLoading: tagsLoading } = useQuery({
     queryKey: ['tags'],
     queryFn: () => tagService.getAll(),
+  });
+
+  const createFolderMutation = useMutation({
+    mutationFn: (name: string) => folderService.create({ name, userId: currentUser!.id }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['folders', currentUser?.id] });
+    },
+    onError: (error: unknown) => {
+      console.error('Create folder failed:', error);
+      alert('Failed to create folder.');
+    }
   });
 
   const filteredSnippets = useMemo(() => {
@@ -102,7 +114,8 @@ export const useApp = () => {
       filterType,
       activeId,
       isLoading,
-      snippetsError
+      snippetsError,
+      isCreatingFolder: createFolderMutation.isPending,
     },
     handlers: {
       setSelectedSnippetId,
@@ -112,6 +125,7 @@ export const useApp = () => {
       handleNewSnippet,
       handleEditSnippet,
       handleFormClose,
+      handleCreateFolder: (name: string) => createFolderMutation.mutate(name),
     }
   };
 };

@@ -1,3 +1,4 @@
+import React from 'react';
 import { Home, Folder, Tag, Star, Plus, ChevronRight, Hash } from 'lucide-react';
 import type { Folder as FolderType, Tag as TagType } from '../types/snippet';
 
@@ -8,6 +9,8 @@ interface SidebarProps {
   activeId: string | null;
   onFilterChange: (filter: 'all' | 'favorites' | 'folder' | 'tag', id: string | null) => void;
   onNewSnippet: () => void;
+  onCreateFolder: (name: string) => void;
+  isCreatingFolder: boolean;
 }
 
 const Sidebar: React.FC<SidebarProps> = ({ 
@@ -16,8 +19,22 @@ const Sidebar: React.FC<SidebarProps> = ({
   activeFilter, 
   activeId, 
   onFilterChange, 
-  onNewSnippet 
+  onNewSnippet,
+  onCreateFolder,
+  isCreatingFolder
 }) => {
+  const [isAddingFolder, setIsAddingFolder] = React.useState(false);
+  const [newFolderName, setNewFolderName] = React.useState('');
+
+  const handleFolderSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (newFolderName.trim()) {
+      onCreateFolder(newFolderName.trim());
+      setNewFolderName('');
+      setIsAddingFolder(false);
+    }
+  };
+
   return (
     <aside className="w-64 border-r border-gray-200 bg-gray-50 h-screen flex flex-col overflow-hidden">
       <div className="p-6">
@@ -52,9 +69,31 @@ const Sidebar: React.FC<SidebarProps> = ({
             <h3 className="text-xs font-bold text-gray-400 uppercase tracking-wider flex items-center gap-2">
               <Folder className="w-3 h-3" /> Folders
             </h3>
+            <button 
+              onClick={() => setIsAddingFolder(true)}
+              className="p-1 hover:bg-gray-200 rounded text-gray-400 hover:text-gray-600 transition-colors"
+            >
+              <Plus className="w-3 h-3" />
+            </button>
           </div>
+
+          {isAddingFolder && (
+            <form onSubmit={handleFolderSubmit} className="px-3 mb-2">
+              <input
+                autoFocus
+                type="text"
+                value={newFolderName}
+                onChange={(e) => setNewFolderName(e.target.value)}
+                onBlur={() => !newFolderName && setIsAddingFolder(false)}
+                placeholder="Folder name..."
+                className="w-full px-2 py-1 text-xs border border-indigo-300 rounded outline-none focus:ring-1 focus:ring-indigo-500"
+                disabled={isCreatingFolder}
+              />
+            </form>
+          )}
+
           <div className="space-y-1">
-            {folders.length === 0 ? (
+            {folders.length === 0 && !isAddingFolder ? (
               <p className="px-3 text-xs text-gray-400 italic">No folders created</p>
             ) : (
               folders.map(folder => (

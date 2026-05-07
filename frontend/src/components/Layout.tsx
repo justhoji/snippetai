@@ -10,6 +10,8 @@ interface LayoutProps {
   activeId: string | null;
   onFilterChange: (filter: 'all' | 'favorites' | 'folder' | 'tag', id: string | null) => void;
   onNewSnippet: () => void;
+  onCreateFolder: (name: string) => void;
+  isCreatingFolder: boolean;
 }
 
 const Layout: React.FC<LayoutProps> = ({ 
@@ -19,7 +21,9 @@ const Layout: React.FC<LayoutProps> = ({
   activeFilter, 
   activeId, 
   onFilterChange, 
-  onNewSnippet 
+  onNewSnippet,
+  onCreateFolder,
+  isCreatingFolder
 }) => {
   return (
     <div className="flex min-h-screen bg-white text-gray-900">
@@ -30,6 +34,8 @@ const Layout: React.FC<LayoutProps> = ({
         activeId={activeId}
         onFilterChange={onFilterChange}
         onNewSnippet={onNewSnippet} 
+        onCreateFolder={onCreateFolder}
+        isCreatingFolder={isCreatingFolder}
       />
       <main className="flex-1 overflow-auto">
         {children}

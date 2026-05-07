@@ -1,5 +1,6 @@
 import React from 'react';
 import { ArrowLeft, Star, Edit, Trash, Copy, Sparkles, MessageSquare } from 'lucide-react';
+import ReactMarkdown from 'react-markdown';
 import type { Snippet } from '../types/snippet';
 import CodeBlock from './CodeBlock';
 import { useSnippetView } from '../hooks/useSnippetView';
@@ -97,7 +98,7 @@ const ViewHeader: React.FC<{
         } disabled:opacity-50`}
       >
         <Sparkles className={`w-4 h-4 ${isAiLoading ? 'animate-spin' : ''}`} />
-        {isAiLoading ? 'Analyzing...' : hasExplanation ? 'Explanation Active' : 'Explain Code'}
+        {isAiLoading ? 'Analyzing...' : hasExplanation ? 'Hide Explanation' : 'Explain Code'}
       </button>
 
       <div className="w-px h-8 bg-gray-100 mx-2" />
@@ -143,8 +144,8 @@ const ExplanationSection: React.FC<{ explanation: string }> = ({ explanation }) 
       <Sparkles className="w-4 h-4 text-indigo-600" />
       <h3 className="text-sm font-bold text-gray-900 uppercase tracking-tight">Line-by-Line Explanation</h3>
     </div>
-    <div className="prose prose-sm max-w-none text-gray-700 whitespace-pre-wrap leading-relaxed">
-      {explanation}
+    <div className="prose prose-sm prose-indigo max-w-none text-gray-700 leading-relaxed">
+      <ReactMarkdown>{explanation}</ReactMarkdown>
     </div>
   </div>
 );

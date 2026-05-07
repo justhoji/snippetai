@@ -20,7 +20,10 @@ export const aiService = {
       messages: [
         {
           role: 'system',
-          content: `You are an expert software engineer. Explain the following ${language} code snippet clearly and concisely. Use markdown formatting.`,
+          content: `You are an expert software engineer. Explain the following ${language} code snippet clearly and concisely. 
+          Use markdown formatting. 
+          CRITICAL: Do not include any conversational filler, preambles, or postambles (e.g., "Sure, here is...", "Hope this helps"). 
+          Start directly with the explanation.`,
         },
         {
           role: 'user',
@@ -39,7 +42,8 @@ export const aiService = {
         {
           role: 'system',
           content: `Analyze the following ${language} code and return a JSON object with a brief "summary" (max 2 sentences) and an array of "tags" (max 5 technical keywords). 
-          Format: { "summary": "...", "tags": ["tag1", "tag2"] }`,
+          Format: { "summary": "...", "tags": ["tag1", "tag2"] }
+          CRITICAL: Do not include any conversational filler. Return ONLY the JSON object.`,
         },
         {
           role: 'user',
@@ -61,11 +65,11 @@ export const aiService = {
       messages: [
         {
           role: 'system',
-          content: 'Detect the programming language of the following code. Return ONLY the language name in lowercase (e.g., javascript, python, html).',
+          content: 'Detect the programming language of the following code. Return ONLY the language name in lowercase (e.g., javascript, python, html). Do not include any other text.',
         },
         {
           role: 'user',
-          content: code.slice(0, 1000), // Only need the first 1000 chars for detection
+          content: code.slice(0, 1000),
         },
       ],
     });

@@ -11,7 +11,7 @@ const JWT_SECRET = process.env.JWT_SECRET || "supersecret";
 
 const userSchema = z.object({
   email: z.email("Invalid email address"),
-  name: z.string().min(1, "Name is required").optional().nullable(),
+  name: z.string().optional().nullable(),
   password: z
     .string()
     .min(6, "Password must be at least 6 characters"),
@@ -73,7 +73,9 @@ router.post(
   asyncHandler(async (req, res) => {
     const validation = userSchema.safeParse(req.body);
     if (!validation.success) {
-      return res.status(400).send(validation.error.message);
+      return res.status(400).send({ 
+        message: validation.error.issues[0]?.message || "Invalid input" 
+      });
     }
 
     const { email, name, password } = validation.data;
@@ -111,7 +113,9 @@ router.post(
   asyncHandler(async (req, res) => {
     const validation = loginSchema.safeParse(req.body);
     if (!validation.success) {
-      return res.status(400).send(validation.error.message);
+      return res.status(400).send({ 
+        message: validation.error.issues[0]?.message || "Invalid input" 
+      });
     }
 
     const { email, password } = validation.data;

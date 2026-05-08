@@ -68,7 +68,7 @@ router.get(
     }
 
     if (language && typeof language === "string") where.language = language;
-    if (folderId && typeof language === "string")
+    if (folderId && typeof folderId === "string")
       where.folderId = folderId === "null" ? null : folderId;
     if (isFavorite === "true") where.isFavorite = true;
     if (tag && typeof tag === "string") {

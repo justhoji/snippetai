@@ -1,6 +1,6 @@
 import React from "react";
 import CodeMirror from "@uiw/react-codemirror";
-import { X, Save, Sparkles, Wand2 } from "lucide-react";
+import { X, Save, Sparkles, Wand2, AlertCircle } from "lucide-react";
 import { useSnippetForm } from "../hooks/useSnippetForm";
 import { LANGUAGES, getLanguageExtension } from "../constants/languages";
 import type { Snippet, Folder } from "../types/snippet";
@@ -17,7 +17,16 @@ const SnippetForm: React.FC<SnippetFormProps> = ({
   onClose,
 }) => {
   const { state, handlers, isPending } = useSnippetForm({ snippet, onClose });
-  const { title, language, code, tags, summary, folderId, isAiLoading } = state;
+  const {
+    title,
+    language,
+    code,
+    tags,
+    summary,
+    folderId,
+    isAiLoading,
+    error,
+  } = state;
   const {
     setTitle,
     setLanguage,
@@ -28,6 +37,7 @@ const SnippetForm: React.FC<SnippetFormProps> = ({
     handleSubmit,
     handleAiSuggest,
     handleLanguageDetect,
+    clearError,
   } = handlers;
 
   return (
@@ -39,15 +49,30 @@ const SnippetForm: React.FC<SnippetFormProps> = ({
           onSubmit={handleSubmit}
           className="flex-1 space-y-6 overflow-auto p-6"
         >
+          {error && (
+            <div className="flex items-center gap-3 rounded-lg border border-red-100 bg-red-50 p-4 text-sm text-red-700 animate-in fade-in slide-in-from-top-2 duration-300">
+              <AlertCircle className="h-4 w-4 shrink-0" />
+              <p className="flex-1 font-medium">{error}</p>
+              <button
+                type="button"
+                onClick={clearError}
+                className="rounded-md p-1 transition-colors hover:bg-red-100"
+              >
+                <X className="h-4 w-4" />
+              </button>
+            </div>
+          )}
+
           <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
             <FormGroup label="Title">
               <input
                 type="text"
-                required
                 value={title}
                 onChange={(e) => setTitle(e.target.value)}
                 placeholder="e.g., Fetch API Wrapper"
-                className="w-full rounded-lg border border-gray-200 px-4 py-2 transition-all outline-none focus:ring-2 focus:ring-indigo-500"
+                className={`w-full rounded-lg border px-4 py-2 transition-all outline-none focus:ring-2 focus:ring-indigo-500 ${
+                  error && !title.trim() ? "border-red-300 bg-red-50/30" : "border-gray-200"
+                }`}
               />
             </FormGroup>
 
@@ -107,7 +132,9 @@ const SnippetForm: React.FC<SnippetFormProps> = ({
           </div>
 
           <FormGroup label="Code">
-            <div className="overflow-hidden rounded-lg border border-gray-200">
+            <div className={`overflow-hidden rounded-lg border transition-all ${
+              error && !code.trim() ? "border-red-300" : "border-gray-200"
+            }`}>
               <CodeMirror
                 value={code}
                 height="300px"

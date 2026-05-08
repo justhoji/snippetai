@@ -24,6 +24,7 @@ export const useSnippetForm = ({ snippet, onClose }: UseSnippetFormProps) => {
     snippet?.folderId || null,
   );
   const [isAiLoading, setIsAiLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   const mutation = useMutation({
     mutationFn: (data: CreateSnippetInput) => {
@@ -37,28 +38,29 @@ export const useSnippetForm = ({ snippet, onClose }: UseSnippetFormProps) => {
       queryClient.invalidateQueries({ queryKey: ["tags"] });
       onClose();
     },
-    onError: (error: unknown) => {
-      console.error("Save failed:", error);
+    onError: (err: unknown) => {
+      console.error("Save failed:", err);
       const message =
-        error instanceof Error ? error.message : "Failed to save snippet";
-      alert(message);
+        err instanceof Error ? err.message : "Failed to save snippet";
+      setError(message);
     },
   });
 
   const handleAiSuggest = async () => {
     if (!code) {
-      alert("Please enter some code first.");
+      setError("Please enter some code before using AI suggestions.");
       return;
     }
 
+    setError(null);
     setIsAiLoading(true);
     try {
       const suggestions = await aiService.suggestMetadata(code, language);
       setSummary(suggestions.summary);
       setTags(suggestions.tags.join(", "));
-    } catch (error) {
-      console.error("AI Suggest failed:", error);
-      alert(
+    } catch (err) {
+      console.error("AI Suggest failed:", err);
+      setError(
         "AI failed to generate suggestions. Ensure your OPENAI_API_KEY is configured.",
       );
     } finally {
@@ -69,11 +71,13 @@ export const useSnippetForm = ({ snippet, onClose }: UseSnippetFormProps) => {
   const handleLanguageDetect = async () => {
     if (!code) return;
     setIsAiLoading(true);
+    setError(null);
     try {
       const detected = await aiService.detectLanguage(code);
       setLanguage(detected);
-    } catch (error) {
-      console.error("Language detection failed:", error);
+    } catch (err) {
+      console.error("Language detection failed:", err);
+      // We don't set a hard error here as it's a "nice to have" feature
     } finally {
       setIsAiLoading(false);
     }
@@ -81,6 +85,17 @@ export const useSnippetForm = ({ snippet, onClose }: UseSnippetFormProps) => {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    setError(null);
+
+    if (!title.trim()) {
+      setError("Title is required.");
+      return;
+    }
+
+    if (!code.trim()) {
+      setError("Code content cannot be empty.");
+      return;
+    }
 
     const tagList = tags
       .split(",")
@@ -88,7 +103,7 @@ export const useSnippetForm = ({ snippet, onClose }: UseSnippetFormProps) => {
       .filter((t) => t !== "");
 
     const payload: CreateSnippetInput = {
-      title,
+      title: title.trim(),
       language,
       code,
       summary,
@@ -101,7 +116,16 @@ export const useSnippetForm = ({ snippet, onClose }: UseSnippetFormProps) => {
   };
 
   return {
-    state: { title, language, code, tags, summary, folderId, isAiLoading },
+    state: {
+      title,
+      language,
+      code,
+      tags,
+      summary,
+      folderId,
+      isAiLoading,
+      error,
+    },
     handlers: {
       setTitle,
       setLanguage,
@@ -112,6 +136,7 @@ export const useSnippetForm = ({ snippet, onClose }: UseSnippetFormProps) => {
       handleSubmit,
       handleAiSuggest,
       handleLanguageDetect,
+      clearError: () => setError(null),
     },
     isPending: mutation.isPending,
   };

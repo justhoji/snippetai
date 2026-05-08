@@ -31,15 +31,29 @@ router.use(auth);
 router.get(
   "/",
   asyncHandler(async (req: AuthRequest, res) => {
-    const { q, language, folderId, tag, isFavorite, sortBy, order, semantic } =
-      req.query;
+    const {
+      q,
+      language,
+      folderId,
+      tag,
+      isFavorite,
+      sortBy,
+      order,
+      semantic,
+      page,
+      limit,
+    } = req.query;
     const userId = req.userId!;
 
     // 1. Handle Semantic Search
     if (semantic === "true" && q && typeof q === "string") {
       const results = await embeddingService.searchSimilarSnippets(q, userId);
 
-      if (results.length === 0) return res.send([]);
+      if (results.length === 0)
+        return res.send({
+          snippets: [],
+          pagination: { total: 0, page: 1, limit: 20, totalPages: 0 },
+        });
 
       const ids = results.map((r) => r.id);
       const snippets = await prisma.snippet.findMany({
@@ -53,7 +67,17 @@ router.get(
         return { ...snippet, similarity: result?.similarity };
       });
 
-      return res.send(sortedSnippets);
+      // Semantic search results are typically not paginated in the same way 
+      // as they are ranked by relevance, but for consistency we return the structure.
+      return res.send({
+        snippets: sortedSnippets,
+        pagination: {
+          total: sortedSnippets.length,
+          page: 1,
+          limit: sortedSnippets.length,
+          totalPages: 1,
+        },
+      });
     }
 
     // 2. Handle Keyword Search & Filtering
@@ -78,13 +102,31 @@ router.get(
     const sortField = typeof sortBy === "string" ? sortBy : "createdAt";
     const sortOrder = order === "asc" ? "asc" : "desc";
 
-    const snippets = await prisma.snippet.findMany({
-      where,
-      include: SNIPPET_INCLUDE,
-      orderBy: { [sortField]: sortOrder },
-    });
+    // Pagination parameters
+    const pageNum = parseInt(page as string) || 1;
+    const limitNum = parseInt(limit as string) || 20;
+    const skip = (pageNum - 1) * limitNum;
 
-    res.send(snippets);
+    const [snippets, total] = await Promise.all([
+      prisma.snippet.findMany({
+        where,
+        include: SNIPPET_INCLUDE,
+        orderBy: { [sortField]: sortOrder },
+        skip,
+        take: limitNum,
+      }),
+      prisma.snippet.count({ where }),
+    ]);
+
+    res.send({
+      snippets,
+      pagination: {
+        total,
+        page: pageNum,
+        limit: limitNum,
+        totalPages: Math.ceil(total / limitNum),
+      },
+    });
   }),
 );
 

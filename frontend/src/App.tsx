@@ -28,6 +28,8 @@ function App() {
     isLoading: appLoading,
     snippetsError,
     isCreatingFolder,
+    page,
+    pagination,
   } = state;
   const {
     setSelectedSnippetId,
@@ -41,6 +43,7 @@ function App() {
     handleCreateFolder,
     handleRenameFolder,
     handleDeleteFolder,
+    setPage,
   } = handlers;
 
   if (authLoading) {
@@ -58,6 +61,7 @@ function App() {
     setFilterType(type);
     setActiveId(id);
     setSelectedSnippetId(null);
+    setPage(1);
   };
 
   const getListTitle = () => {
@@ -99,9 +103,15 @@ function App() {
             <Header
               user={currentUser}
               searchQuery={searchQuery}
-              onSearchChange={setSearchQuery}
+              onSearchChange={(q) => {
+                setSearchQuery(q);
+                setPage(1);
+              }}
               isSemanticSearch={isSemanticSearch}
-              onSemanticToggle={setIsSemanticSearch}
+              onSemanticToggle={(s) => {
+                setIsSemanticSearch(s);
+                setPage(1);
+              }}
             />
 
             <div className="flex-1 overflow-y-auto">
@@ -117,6 +127,9 @@ function App() {
                   snippets={filteredSnippets}
                   title={getListTitle()}
                   onSelectSnippet={(s) => setSelectedSnippetId(s.id)}
+                  pagination={pagination}
+                  currentPage={page}
+                  onPageChange={setPage}
                 />
               )}
             </div>

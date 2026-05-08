@@ -25,6 +25,18 @@ export interface Snippet {
   updatedAt: string;
 }
 
+export interface Pagination {
+  total: number;
+  page: number;
+  limit: number;
+  totalPages: number;
+}
+
+export interface PaginatedSnippets {
+  snippets: Snippet[];
+  pagination: Pagination;
+}
+
 export type CreateSnippetInput = Omit<
   Snippet,
   "id" | "tags" | "userId" | "createdAt" | "updatedAt"

@@ -21,16 +21,28 @@ export const useApp = () => {
   const [filterType, setFilterType] = useState<FilterType>("all");
   const [activeId, setActiveId] = useState<string | null>(null);
   const [isSemanticSearch, setIsSemanticSearch] = useState(false);
+  const [page, setPage] = useState(1);
+  const limit = 20;
 
   const {
-    data: snippets,
+    data: snippetsData,
     isLoading: snippetsLoading,
     error: snippetsError,
     isFetching: isSnippetsFetching,
   } = useQuery({
-    queryKey: ["snippets", searchQuery, isSemanticSearch, filterType, activeId],
+    queryKey: [
+      "snippets",
+      searchQuery,
+      isSemanticSearch,
+      filterType,
+      activeId,
+      page,
+    ],
     queryFn: () => {
-      const params: Record<string, string | boolean | undefined> = {};
+      const params: Record<string, string | number | boolean | undefined> = {
+        page,
+        limit,
+      };
 
       if (isSemanticSearch && searchQuery.trim()) {
         params.q = searchQuery;
@@ -99,6 +111,12 @@ export const useApp = () => {
     },
   });
 
+  const snippets = useMemo(
+    () => snippetsData?.snippets || [],
+    [snippetsData?.snippets],
+  );
+  const pagination = useMemo(() => snippetsData?.pagination, [snippetsData]);
+
   const filteredSnippets = useMemo(() => {
     return snippets || [];
   }, [snippets]);
@@ -141,6 +159,8 @@ export const useApp = () => {
       isLoading: (isLoading || isSnippetsFetching) && !!currentUser,
       snippetsError,
       isCreatingFolder: createFolderMutation.isPending,
+      page,
+      pagination,
     },
     handlers: {
       setSelectedSnippetId,
@@ -151,6 +171,7 @@ export const useApp = () => {
       handleNewSnippet,
       handleEditSnippet,
       handleFormClose,
+      setPage,
       handleCreateFolder: (name: string) => createFolderMutation.mutate(name),
       handleRenameFolder: (id: string, name: string) =>
         updateFolderMutation.mutate({ id, name }),

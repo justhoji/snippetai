@@ -3,11 +3,14 @@ import type {
   Snippet,
   CreateSnippetInput,
   UpdateSnippetInput,
+  PaginatedSnippets,
 } from "../types/snippet";
 
 export const snippetService = {
-  getAll: async (params?: Record<string, unknown>): Promise<Snippet[]> => {
-    const response = await apiClient.get<Snippet[]>("/snippets", { params });
+  getAll: async (params?: Record<string, unknown>): Promise<PaginatedSnippets> => {
+    const response = await apiClient.get<PaginatedSnippets>("/snippets", {
+      params,
+    });
     return response.data;
   },
 

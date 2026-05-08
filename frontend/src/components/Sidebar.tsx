@@ -25,6 +25,10 @@ const Sidebar: React.FC<SidebarProps> = ({
 }) => {
   const [isAddingFolder, setIsAddingFolder] = React.useState(false);
   const [newFolderName, setNewFolderName] = React.useState('');
+  const [showAllTags, setShowAllTags] = React.useState(false);
+
+  const TAG_LIMIT = 10;
+  const displayedTags = showAllTags ? tags : tags.slice(0, TAG_LIMIT);
 
   const handleFolderSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -121,20 +125,31 @@ const Sidebar: React.FC<SidebarProps> = ({
             {tags.length === 0 ? (
               <p className="text-xs text-gray-400 italic">No tags yet</p>
             ) : (
-              tags.map(tag => (
-                <button
-                  key={tag.id}
-                  onClick={() => onFilterChange('tag', tag.id)}
-                  className={`flex items-center gap-1 px-2 py-1 rounded text-xs font-medium transition-colors ${
-                    activeFilter === 'tag' && activeId === tag.id
-                      ? 'bg-indigo-600 text-white'
-                      : 'bg-gray-200 text-gray-600 hover:bg-gray-300'
-                  }`}
-                >
-                  <Hash className="w-3 h-3" />
-                  {tag.name}
-                </button>
-              ))
+              <>
+                {displayedTags.map(tag => (
+                  <button
+                    key={tag.id}
+                    onClick={() => onFilterChange('tag', tag.id)}
+                    className={`flex items-center gap-1 px-2 py-1 rounded text-xs font-medium transition-colors ${
+                      activeFilter === 'tag' && activeId === tag.id
+                        ? 'bg-indigo-600 text-white'
+                        : 'bg-gray-200 text-gray-600 hover:bg-gray-300'
+                    }`}
+                  >
+                    <Hash className="w-3 h-3" />
+                    {tag.name}
+                  </button>
+                ))}
+                
+                {tags.length > TAG_LIMIT && (
+                  <button
+                    onClick={() => setShowAllTags(!showAllTags)}
+                    className="text-[10px] font-bold text-indigo-600 hover:text-indigo-700 px-2 py-1 transition-colors"
+                  >
+                    {showAllTags ? 'Show less' : `+${tags.length - TAG_LIMIT} more`}
+                  </button>
+                )}
+              </>
             )}
           </div>
         </div>

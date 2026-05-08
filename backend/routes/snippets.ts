@@ -48,10 +48,9 @@ router.get(
         const vectorStr = `[${embedding.join(",")}]`;
 
         // Use a threshold to filter out irrelevant snippets (e.g., similarity > 0.3)
-        const snippets: any[] = await prisma.$queryRawUnsafe(
+        const results: any[] = await prisma.$queryRawUnsafe(
           `
-          SELECT id, title, language, summary, "isFavorite", "folderId", "userId", "createdAt", "updatedAt",
-                 1 - (embedding <=> $1::vector) as similarity
+          SELECT id, 1 - (embedding <=> $1::vector) as similarity
           FROM "Snippet"
           WHERE embedding IS NOT NULL 
             AND "userId" = $2 
@@ -63,8 +62,31 @@ router.get(
           userId,
         );
 
-        console.log(`Found ${snippets.length} relevant snippets.`);
-        return res.send(snippets);
+        console.log(`Found ${results.length} relevant snippets.`);
+        
+        if (results.length === 0) {
+          return res.send([]);
+        }
+
+        const ids = results.map(r => r.id);
+        const snippets = await prisma.snippet.findMany({
+          where: {
+            id: { in: ids }
+          },
+          include: {
+            tags: true,
+            folder: true
+          }
+        });
+
+        // Maintain the order from the semantic search and add similarity
+        const sortedSnippets = ids.map(id => {
+          const snippet = snippets.find(s => s.id === id);
+          const result = results.find(r => r.id === id);
+          return { ...snippet, similarity: result.similarity };
+        });
+
+        return res.send(sortedSnippets);
       } catch (error) {
         console.error("Semantic search failed:", error);
         // Fallback to keyword search if AI fails

@@ -14,7 +14,7 @@ export const useSnippetForm = ({ snippet, onClose }: UseSnippetFormProps) => {
   const [title, setTitle] = useState(snippet?.title || '');
   const [language, setLanguage] = useState(snippet?.language.toLowerCase() || 'typescript');
   const [code, setCode] = useState(snippet?.code || '');
-  const [tags, setTags] = useState(snippet?.tags.map(t => t.name).join(', ') || '');
+  const [tags, setTags] = useState(snippet?.tags?.map(t => t.name).join(', ') || '');
   const [summary, setSummary] = useState(snippet?.summary || '');
   const [folderId, setFolderId] = useState<string | null>(snippet?.folderId || null);
   const [isAiLoading, setIsAiLoading] = useState(false);
@@ -74,7 +74,7 @@ export const useSnippetForm = ({ snippet, onClose }: UseSnippetFormProps) => {
 
     const tagList = tags.split(',').map(t => t.trim()).filter(t => t !== '');
     
-    const payload: any = {
+    const payload: CreateSnippetInput = {
       title,
       language,
       code,

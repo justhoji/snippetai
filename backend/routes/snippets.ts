@@ -27,7 +27,6 @@ const updateSnippetSchema = snippetSchema.partial();
 
 router.use(auth);
 
-// Get all snippets with search and filtering
 router.get(
   "/",
   asyncHandler(async (req: AuthRequest, res) => {
@@ -67,8 +66,6 @@ router.get(
         return { ...snippet, similarity: result?.similarity };
       });
 
-      // Semantic search results are typically not paginated in the same way 
-      // as they are ranked by relevance, but for consistency we return the structure.
       return res.send({
         snippets: sortedSnippets,
         pagination: {
@@ -80,7 +77,6 @@ router.get(
       });
     }
 
-    // 2. Handle Keyword Search & Filtering
     const where: any = { userId };
 
     if (q && typeof q === "string") {
@@ -130,7 +126,6 @@ router.get(
   }),
 );
 
-// Get single snippet
 router.get(
   "/:id",
   asyncHandler(async (req: AuthRequest, res) => {
@@ -145,7 +140,6 @@ router.get(
   }),
 );
 
-// Create snippet
 router.post(
   "/",
   asyncHandler(async (req: AuthRequest, res) => {
@@ -181,7 +175,6 @@ router.post(
   }),
 );
 
-// Update snippet
 router.put(
   "/:id",
   asyncHandler(async (req: AuthRequest, res) => {
@@ -230,7 +223,6 @@ router.put(
   }),
 );
 
-// Delete snippet
 router.delete(
   "/:id",
   asyncHandler(async (req: AuthRequest, res) => {

@@ -13,7 +13,6 @@ const folderSchema = z.object({
 
 const updateFolderSchema = folderSchema.partial();
 
-// Apply auth middleware
 router.use(auth);
 
 router.get(

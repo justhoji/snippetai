@@ -42,7 +42,6 @@ router.get(
 
     // Handle Semantic Search
     if (semantic === "true" && q && typeof q === "string") {
-      console.log(`Performing semantic search for: "${q}"`);
       try {
         const embedding = await aiService.generateEmbedding(q);
         const vectorStr = `[${embedding.join(",")}]`;
@@ -62,34 +61,31 @@ router.get(
           userId,
         );
 
-        console.log(`Found ${results.length} relevant snippets.`);
-        
         if (results.length === 0) {
           return res.send([]);
         }
 
-        const ids = results.map(r => r.id);
+        const ids = results.map((r) => r.id);
         const snippets = await prisma.snippet.findMany({
           where: {
-            id: { in: ids }
+            id: { in: ids },
           },
           include: {
             tags: true,
-            folder: true
-          }
+            folder: true,
+          },
         });
 
         // Maintain the order from the semantic search and add similarity
-        const sortedSnippets = ids.map(id => {
-          const snippet = snippets.find(s => s.id === id);
-          const result = results.find(r => r.id === id);
+        const sortedSnippets = ids.map((id) => {
+          const snippet = snippets.find((s) => s.id === id);
+          const result = results.find((r) => r.id === id);
           return { ...snippet, similarity: result.similarity };
         });
 
         return res.send(sortedSnippets);
       } catch (error) {
         console.error("Semantic search failed:", error);
-        // Fallback to keyword search if AI fails
       }
     }
 

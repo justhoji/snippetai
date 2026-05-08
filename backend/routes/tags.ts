@@ -11,29 +11,28 @@ const tagSchema = z.object({
   name: z.string().min(1, "Tag name is required").max(50),
 });
 
-// Apply auth middleware
 router.use(auth);
 
 router.get(
   "/",
   asyncHandler(async (req: AuthRequest, res) => {
     const userId = req.userId!;
-    
+
     // Find tags that have at least one snippet belonging to the current user
     const tags = await prisma.tag.findMany({
       where: {
         snippets: {
           some: {
-            userId: userId
-          }
-        }
+            userId: userId,
+          },
+        },
       },
       include: {
         _count: {
-          select: { 
+          select: {
             snippets: {
-              where: { userId: userId }
-            } 
+              where: { userId: userId },
+            },
           },
         },
       },

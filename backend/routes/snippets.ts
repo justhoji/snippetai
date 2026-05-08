@@ -9,7 +9,12 @@ import type { AuthRequest } from "../middlewares/auth";
 const router = express.Router();
 
 // Helper to prepare text for embedding
-const getEmbeddingText = (title: string, language: string, code: string, summary?: string | null) => {
+const getEmbeddingText = (
+  title: string,
+  language: string,
+  code: string,
+  summary?: string | null,
+) => {
   return `Title: ${title}\nLanguage: ${language}\nSummary: ${summary || ""}\nCode:\n${code}`;
 };
 
@@ -25,31 +30,45 @@ const snippetSchema = z.object({
 
 const updateSnippetSchema = snippetSchema.partial();
 
-// Apply auth middleware to all snippet routes
 router.use(auth);
 
 // Get all snippets with search and filtering
 router.get(
   "/",
   asyncHandler(async (req: AuthRequest, res) => {
-    const { q, language, folderId, tag, isFavorite, sortBy, order, semantic } = req.query;
+    const { q, language, folderId, tag, isFavorite, sortBy, order, semantic } =
+      req.query;
     const userId = req.userId!;
 
     // Handle Semantic Search
     if (semantic === "true" && q && typeof q === "string") {
-      const embedding = await aiService.generateEmbedding(q);
-      const vectorStr = `[${embedding.join(",")}]`;
+      console.log(`Performing semantic search for: "${q}"`);
+      try {
+        const embedding = await aiService.generateEmbedding(q);
+        const vectorStr = `[${embedding.join(",")}]`;
 
-      const snippets = await prisma.$queryRawUnsafe(`
-        SELECT id, title, language, summary, "isFavorite", "folderId", "userId", "createdAt", "updatedAt",
-               1 - (embedding <=> $1::vector) as similarity
-        FROM "Snippet"
-        WHERE embedding IS NOT NULL AND "userId" = $2
-        ORDER BY embedding <=> $1::vector
-        LIMIT 20
-      `, vectorStr, userId);
+        // Use a threshold to filter out irrelevant snippets (e.g., similarity > 0.3)
+        const snippets: any[] = await prisma.$queryRawUnsafe(
+          `
+          SELECT id, title, language, summary, "isFavorite", "folderId", "userId", "createdAt", "updatedAt",
+                 1 - (embedding <=> $1::vector) as similarity
+          FROM "Snippet"
+          WHERE embedding IS NOT NULL 
+            AND "userId" = $2 
+            AND 1 - (embedding <=> $1::vector) > 0.3
+          ORDER BY embedding <=> $1::vector
+          LIMIT 20
+        `,
+          vectorStr,
+          userId,
+        );
 
-      return res.send(snippets);
+        console.log(`Found ${snippets.length} relevant snippets.`);
+        return res.send(snippets);
+      } catch (error) {
+        console.error("Semantic search failed:", error);
+        // Fallback to keyword search if AI fails
+      }
     }
 
     const where: any = { userId };
@@ -131,15 +150,8 @@ router.post(
       return res.status(400).send(validation.error.message);
     }
 
-    const {
-      title,
-      language,
-      code,
-      summary,
-      isFavorite,
-      folderId,
-      tags,
-    } = validation.data;
+    const { title, language, code, summary, isFavorite, folderId, tags } =
+      validation.data;
 
     const snippet = await prisma.snippet.create({
       data: {
@@ -164,11 +176,13 @@ router.post(
 
     // Generate and store embedding
     try {
-      const embedding = await aiService.generateEmbedding(getEmbeddingText(title, language, code, summary));
+      const embedding = await aiService.generateEmbedding(
+        getEmbeddingText(title, language, code, summary),
+      );
       await prisma.$executeRawUnsafe(
         `UPDATE "Snippet" SET embedding = $1::vector WHERE id = $2`,
         `[${embedding.join(",")}]`,
-        snippet.id
+        snippet.id,
       );
     } catch (error) {
       console.error("Failed to generate embedding on create:", error);
@@ -217,20 +231,25 @@ router.put(
     });
 
     // Update embedding if relevant fields changed
-    if (data.title || data.language || data.code || data.summary !== undefined) {
+    if (
+      data.title ||
+      data.language ||
+      data.code ||
+      data.summary !== undefined
+    ) {
       try {
         const embedding = await aiService.generateEmbedding(
           getEmbeddingText(
             updatedSnippet.title,
             updatedSnippet.language,
             updatedSnippet.code,
-            updatedSnippet.summary
-          )
+            updatedSnippet.summary,
+          ),
         );
         await prisma.$executeRawUnsafe(
           `UPDATE "Snippet" SET embedding = $1::vector WHERE id = $2`,
           `[${embedding.join(",")}]`,
-          updatedSnippet.id
+          updatedSnippet.id,
         );
       } catch (error) {
         console.error("Failed to update embedding on put:", error);

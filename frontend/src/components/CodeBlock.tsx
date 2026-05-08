@@ -36,7 +36,7 @@ const CodeBlock: React.FC<CodeBlockProps> = ({ code, language }) => {
 
   return (
     <div
-      className="shiki-container overflow-auto rounded-lg border border-gray-100 text-sm"
+      className="shiki-container overflow-auto rounded-xl border border-gray-100 bg-white text-sm [&>pre]:!bg-transparent [&>pre]:p-6"
       dangerouslySetInnerHTML={{ __html: html }}
     />
   );

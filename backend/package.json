@@ -4,8 +4,8 @@
   "type": "module",
   "private": true,
   "scripts": {
-    "dev": "bun --watch index.ts",
-    "start": "bun index.ts"
+    "dev": "bun --watch --preload ./startup/instrument.ts index.ts",
+    "start": "bun --preload ./startup/instrument.ts index.ts"
   },
   "devDependencies": {
     "@types/bcrypt": "^6.0.0",
@@ -23,6 +23,7 @@
   "dependencies": {
     "@prisma/adapter-pg": "^7.8.0",
     "@prisma/client": "^7.8.0",
+    "@sentry/bun": "^10.52.0",
     "bcrypt": "^6.0.0",
     "cookie-parser": "^1.4.7",
     "cors": "^2.8.6",

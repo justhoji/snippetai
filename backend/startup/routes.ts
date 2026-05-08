@@ -1,3 +1,4 @@
+import * as Sentry from "@sentry/bun";
 import express from "express";
 import error from "../routes/error";
 import snippets from "../routes/snippets";
@@ -22,5 +23,7 @@ export default function (app: express.Application) {
   app.use("/api/folders", folders);
   app.use("/api/tags", tags);
   app.use("/api/ai", ai);
+
+  Sentry.setupExpressErrorHandler(app);
   app.use(error);
 }

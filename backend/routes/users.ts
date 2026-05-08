@@ -1,13 +1,9 @@
 import express from "express";
 import { z } from "zod";
-import bcrypt from "bcrypt";
-import jwt from "jsonwebtoken";
-import { prisma } from "../lib/prisma";
+import { userService } from "../lib/userService";
 import asyncHandler from "../middlewares/async";
 
 const router = express.Router();
-
-const JWT_SECRET = process.env.JWT_SECRET || "supersecret";
 
 const userSchema = z.object({
   email: z.email("Invalid email address"),
@@ -19,10 +15,6 @@ const loginSchema = z.object({
   email: z.email("Invalid email address"),
   password: z.string().min(1, "Password is required"),
 });
-
-const generateToken = (userId: string) => {
-  return jwt.sign({ userId }, JWT_SECRET, { expiresIn: "7d" });
-};
 
 const setTokenCookie = (res: express.Response, token: string) => {
   res.cookie("token", token, {
@@ -42,26 +34,17 @@ router.get(
       return res.status(401).send({ message: "Not authenticated" });
     }
 
-    try {
-      const decoded = jwt.verify(token, JWT_SECRET) as { userId: string };
-      const user = await prisma.user.findUnique({
-        where: { id: decoded.userId },
-        select: {
-          id: true,
-          email: true,
-          name: true,
-          createdAt: true,
-        },
-      });
-
-      if (!user) {
-        return res.status(401).send({ message: "User not found" });
-      }
-
-      res.send(user);
-    } catch (error) {
-      res.status(401).send({ message: "Invalid token" });
+    const decoded = userService.verifyToken(token);
+    if (!decoded) {
+      return res.status(401).send({ message: "Invalid token" });
     }
+
+    const user = await userService.getUserById(decoded.userId);
+    if (!user) {
+      return res.status(401).send({ message: "User not found" });
+    }
+
+    res.send(user);
   }),
 );
 
@@ -76,32 +59,18 @@ router.post(
       });
     }
 
-    const { email, name, password } = validation.data;
-
-    const userExists = await prisma.user.findUnique({
-      where: { email },
-    });
+    const { email } = validation.data;
+    const userExists = await userService.getUserByEmail(email);
 
     if (userExists) {
       return res.status(400).send({ message: "User already registered." });
     }
 
-    const salt = await bcrypt.genSalt(10);
-    const hashedPassword = await bcrypt.hash(password, salt);
-
-    const user = await prisma.user.create({
-      data: {
-        email,
-        name,
-        password: hashedPassword,
-      },
-    });
-
-    const token = generateToken(user.id);
+    const user = await userService.register(validation.data);
+    const token = userService.generateToken(user.id);
     setTokenCookie(res, token);
 
-    const { password: _, ...userWithoutPassword } = user;
-    res.status(201).send(userWithoutPassword);
+    res.status(201).send(user);
   }),
 );
 
@@ -117,25 +86,16 @@ router.post(
     }
 
     const { email, password } = validation.data;
+    const user = await userService.login(email, password);
 
-    const user = await prisma.user.findUnique({
-      where: { email },
-    });
-
-    if (!user || !user.password) {
+    if (!user) {
       return res.status(400).send({ message: "Invalid email or password." });
     }
 
-    const validPassword = await bcrypt.compare(password, user.password);
-    if (!validPassword) {
-      return res.status(400).send({ message: "Invalid email or password." });
-    }
-
-    const token = generateToken(user.id);
+    const token = userService.generateToken(user.id);
     setTokenCookie(res, token);
 
-    const { password: _, ...userWithoutPassword } = user;
-    res.send(userWithoutPassword);
+    res.send(user);
   }),
 );
 
@@ -148,29 +108,20 @@ router.post(
   }),
 );
 
-// Admin routes or specific user management (optional, keeping basic CRUD for now but protecting it)
-// In a real app, these should be restricted to admins or the user themselves
+// Get all users
 router.get(
   "/",
   asyncHandler(async (req, res) => {
-    const users = await prisma.user.findMany({
-      select: {
-        id: true,
-        email: true,
-        name: true,
-        createdAt: true,
-      },
-    });
+    const users = await userService.getUsers();
     res.send(users);
   }),
 );
 
+// Delete user
 router.delete(
   "/:id",
   asyncHandler(async (req, res) => {
-    await prisma.user.delete({
-      where: { id: req.params.id },
-    });
+    await userService.deleteUser(req.params.id);
     res.status(204).send();
   }),
 );

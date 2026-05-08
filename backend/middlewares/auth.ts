@@ -1,7 +1,6 @@
-import type { Request, Response, NextFunction } from "express";
-import jwt from "jsonwebtoken";
-
-const JWT_SECRET = process.env.JWT_SECRET || "supersecret";
+import type { Response, NextFunction } from "express";
+import { userService } from "../lib/userService";
+import type { Request } from "express";
 
 export interface AuthRequest extends Request {
   userId?: string;
@@ -16,11 +15,11 @@ export const auth = (req: AuthRequest, res: Response, next: NextFunction) => {
       .send({ message: "Access denied. No token provided." });
   }
 
-  try {
-    const decoded = jwt.verify(token, JWT_SECRET) as { userId: string };
-    req.userId = decoded.userId;
-    next();
-  } catch (error) {
-    res.status(401).send({ message: "Invalid token." });
+  const decoded = userService.verifyToken(token);
+  if (!decoded) {
+    return res.status(401).send({ message: "Invalid token." });
   }
+
+  req.userId = decoded.userId;
+  next();
 };

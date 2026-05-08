@@ -17,7 +17,7 @@ const SnippetView: React.FC<SnippetViewProps> = ({ snippet, onBack, onEdit, onDe
   const { explanation, isAiLoading } = state;
 
   return (
-    <div className="flex-1 p-8 bg-white">
+    <div className="flex-1 p-8 overflow-y-auto">
       <div className="max-w-5xl mx-auto pb-12">
         {/* Back Button */}
         <button 

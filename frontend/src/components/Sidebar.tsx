@@ -11,6 +11,7 @@ import {
   Edit2,
   Check,
   X,
+  Sparkles,
 } from "lucide-react";
 import type { Folder as FolderType, Tag as TagType } from "../types/snippet";
 
@@ -75,9 +76,9 @@ const Sidebar: React.FC<SidebarProps> = ({
       <div className="p-6">
         <h1 className="flex items-center gap-2 text-xl font-bold text-indigo-600">
           <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-indigo-600">
-            <span className="text-xs text-white">CV</span>
+            <Sparkles className="h-5 w-5 text-white" />
           </div>
-          CodeVault
+          SnippetAI
         </h1>
       </div>
 

@@ -73,6 +73,21 @@ export const useApp = () => {
     },
   });
 
+  const deleteFolderMutation = useMutation({
+    mutationFn: (id: string) => folderService.delete(id),
+    onSuccess: (_, folderId) => {
+      queryClient.invalidateQueries({ queryKey: ["folders"] });
+      if (activeId === folderId && filterType === "folder") {
+        setFilterType("all");
+        setActiveId(null);
+      }
+    },
+    onError: (error: unknown) => {
+      console.error("Delete folder failed:", error);
+      alert("Failed to delete folder.");
+    },
+  });
+
   const filteredSnippets = useMemo(() => {
     return snippets || [];
   }, [snippets]);
@@ -127,6 +142,7 @@ export const useApp = () => {
       handleEditSnippet,
       handleFormClose,
       handleCreateFolder: (name: string) => createFolderMutation.mutate(name),
+      handleDeleteFolder: (id: string) => deleteFolderMutation.mutate(id),
     },
   };
 };

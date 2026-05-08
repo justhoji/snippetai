@@ -1,5 +1,5 @@
 import React from 'react';
-import { Home, Folder, Tag, Star, Plus, ChevronRight, Hash } from 'lucide-react';
+import { Home, Folder, Tag, Star, Plus, ChevronRight, Hash, Trash } from 'lucide-react';
 import type { Folder as FolderType, Tag as TagType } from '../types/snippet';
 
 interface SidebarProps {
@@ -10,6 +10,7 @@ interface SidebarProps {
   onFilterChange: (filter: 'all' | 'favorites' | 'folder' | 'tag', id: string | null) => void;
   onNewSnippet: () => void;
   onCreateFolder: (name: string) => void;
+  onDeleteFolder: (id: string) => void;
   isCreatingFolder: boolean;
 }
 
@@ -21,6 +22,7 @@ const Sidebar: React.FC<SidebarProps> = ({
   onFilterChange, 
   onNewSnippet,
   onCreateFolder,
+  onDeleteFolder,
   isCreatingFolder
 }) => {
   const [isAddingFolder, setIsAddingFolder] = React.useState(false);
@@ -101,14 +103,27 @@ const Sidebar: React.FC<SidebarProps> = ({
               <p className="px-3 text-xs text-gray-400 italic">No folders created</p>
             ) : (
               folders.map(folder => (
-                <NavItem 
-                  key={folder.id}
-                  icon={ChevronRight}
-                  label={folder.name}
-                  active={activeFilter === 'folder' && activeId === folder.id}
-                  onClick={() => onFilterChange('folder', folder.id)}
-                  compact
-                />
+                <div key={folder.id} className="group/folder relative">
+                  <NavItem 
+                    icon={ChevronRight}
+                    label={folder.name}
+                    active={activeFilter === 'folder' && activeId === folder.id}
+                    onClick={() => onFilterChange('folder', folder.id)}
+                    compact
+                  />
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      if (window.confirm(`Delete folder "${folder.name}"? Snippets will not be deleted.`)) {
+                        onDeleteFolder(folder.id);
+                      }
+                    }}
+                    className="absolute right-2 top-1/2 -translate-y-1/2 p-1 text-gray-400 hover:text-red-500 opacity-0 group-hover/folder:opacity-100 transition-opacity"
+                    title="Delete Folder"
+                  >
+                    <Trash className="w-3 h-3" />
+                  </button>
+                </div>
               ))
             )}
           </div>

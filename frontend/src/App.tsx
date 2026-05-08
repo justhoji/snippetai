@@ -39,7 +39,8 @@ function App() {
     handleNewSnippet, 
     handleEditSnippet, 
     handleFormClose,
-    handleCreateFolder
+    handleCreateFolder,
+    handleDeleteFolder
   } = handlers;
 
   if (authLoading) {
@@ -86,6 +87,7 @@ function App() {
       activeId={activeId}
       onFilterChange={handleFilterChange}
       onCreateFolder={handleCreateFolder}
+      onDeleteFolder={handleDeleteFolder}
       isCreatingFolder={isCreatingFolder}
     >
       <div className="h-full flex flex-col overflow-hidden">

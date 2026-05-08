@@ -11,6 +11,7 @@ interface LayoutProps {
   onFilterChange: (filter: 'all' | 'favorites' | 'folder' | 'tag', id: string | null) => void;
   onNewSnippet: () => void;
   onCreateFolder: (name: string) => void;
+  onDeleteFolder: (id: string) => void;
   isCreatingFolder: boolean;
 }
 
@@ -23,6 +24,7 @@ const Layout: React.FC<LayoutProps> = ({
   onFilterChange, 
   onNewSnippet,
   onCreateFolder,
+  onDeleteFolder,
   isCreatingFolder
 }) => {
   return (
@@ -35,6 +37,7 @@ const Layout: React.FC<LayoutProps> = ({
         onFilterChange={onFilterChange}
         onNewSnippet={onNewSnippet} 
         onCreateFolder={onCreateFolder}
+        onDeleteFolder={onDeleteFolder}
         isCreatingFolder={isCreatingFolder}
       />
       <main className="flex-1 flex flex-col min-w-0 overflow-hidden">

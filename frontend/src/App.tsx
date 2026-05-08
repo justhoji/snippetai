@@ -1,11 +1,9 @@
-import { useState } from "react";
 import Layout from "./components/Layout";
 import Header from "./components/Header";
 import SnippetList from "./components/SnippetList";
 import SnippetView from "./components/SnippetView";
 import SnippetForm from "./components/SnippetForm";
-import Login from "./components/Login";
-import Register from "./components/Register";
+import AuthContainer from "./components/AuthContainer";
 import LoadingSpinner from "./components/common/LoadingSpinner";
 import ErrorState from "./components/common/ErrorState";
 import { useApp } from "./hooks/useApp";
@@ -13,7 +11,6 @@ import { useAuth } from "./context/AuthContext";
 
 function App() {
   const { user, isLoading: authLoading } = useAuth();
-  const [authView, setAuthView] = useState<"login" | "register">("login");
 
   const { state, handlers } = useApp();
   const {
@@ -50,11 +47,7 @@ function App() {
   }
 
   if (!user) {
-    return authView === "login" ? (
-      <Login onSwitchToRegister={() => setAuthView("register")} />
-    ) : (
-      <Register onSwitchToLogin={() => setAuthView("login")} />
-    );
+    return <AuthContainer />;
   }
 
   const handleFilterChange = (

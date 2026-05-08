@@ -11,7 +11,9 @@ export const auth = (req: AuthRequest, res: Response, next: NextFunction) => {
   const token = req.cookies.token;
 
   if (!token) {
-    return res.status(401).send({ message: "Access denied. No token provided." });
+    return res
+      .status(401)
+      .send({ message: "Access denied. No token provided." });
   }
 
   try {

@@ -84,7 +84,7 @@ function App() {
       onDeleteFolder={handleDeleteFolder}
       isCreatingFolder={isCreatingFolder}
     >
-      <div className="h-full flex flex-col overflow-hidden">
+      <div className="flex h-full flex-col overflow-hidden">
         {selectedSnippet ? (
           <SnippetView
             snippet={selectedSnippet}

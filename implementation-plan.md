@@ -31,7 +31,6 @@ This plan breaks the project into logical phases to move from setup to a fully f
 - [x] **2.4 Syntax Highlighting:**
   - Implement Shiki for high-quality code rendering in the view mode.
 
-
 ## Phase 3: Search & Organization
 
 - [ ] **3.1 Search Functionality:**

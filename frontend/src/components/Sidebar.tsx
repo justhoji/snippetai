@@ -1,32 +1,44 @@
-import React from 'react';
-import { Home, Folder, Tag, Star, Plus, ChevronRight, Hash, Trash } from 'lucide-react';
-import type { Folder as FolderType, Tag as TagType } from '../types/snippet';
+import React from "react";
+import {
+  Home,
+  Folder,
+  Tag,
+  Star,
+  Plus,
+  ChevronRight,
+  Hash,
+  Trash,
+} from "lucide-react";
+import type { Folder as FolderType, Tag as TagType } from "../types/snippet";
 
 interface SidebarProps {
   folders: FolderType[];
   tags: TagType[];
-  activeFilter: 'all' | 'favorites' | 'folder' | 'tag';
+  activeFilter: "all" | "favorites" | "folder" | "tag";
   activeId: string | null;
-  onFilterChange: (filter: 'all' | 'favorites' | 'folder' | 'tag', id: string | null) => void;
+  onFilterChange: (
+    filter: "all" | "favorites" | "folder" | "tag",
+    id: string | null,
+  ) => void;
   onNewSnippet: () => void;
   onCreateFolder: (name: string) => void;
   onDeleteFolder: (id: string) => void;
   isCreatingFolder: boolean;
 }
 
-const Sidebar: React.FC<SidebarProps> = ({ 
-  folders, 
-  tags, 
-  activeFilter, 
-  activeId, 
-  onFilterChange, 
+const Sidebar: React.FC<SidebarProps> = ({
+  folders,
+  tags,
+  activeFilter,
+  activeId,
+  onFilterChange,
   onNewSnippet,
   onCreateFolder,
   onDeleteFolder,
-  isCreatingFolder
+  isCreatingFolder,
 }) => {
   const [isAddingFolder, setIsAddingFolder] = React.useState(false);
-  const [newFolderName, setNewFolderName] = React.useState('');
+  const [newFolderName, setNewFolderName] = React.useState("");
   const [showAllTags, setShowAllTags] = React.useState(false);
 
   const TAG_LIMIT = 10;
@@ -36,55 +48,55 @@ const Sidebar: React.FC<SidebarProps> = ({
     e.preventDefault();
     if (newFolderName.trim()) {
       onCreateFolder(newFolderName.trim());
-      setNewFolderName('');
+      setNewFolderName("");
       setIsAddingFolder(false);
     }
   };
 
   return (
-    <aside className="w-64 border-r border-gray-200 bg-gray-50 h-screen flex flex-col overflow-hidden">
+    <aside className="flex h-screen w-64 flex-col overflow-hidden border-r border-gray-200 bg-gray-50">
       <div className="p-6">
-        <h1 className="text-xl font-bold text-indigo-600 flex items-center gap-2">
-          <div className="w-8 h-8 bg-indigo-600 rounded-lg flex items-center justify-center">
-            <span className="text-white text-xs">CV</span>
+        <h1 className="flex items-center gap-2 text-xl font-bold text-indigo-600">
+          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-indigo-600">
+            <span className="text-xs text-white">CV</span>
           </div>
           CodeVault
         </h1>
       </div>
 
-      <div className="flex-1 overflow-y-auto px-4 space-y-6 pb-6">
+      <div className="flex-1 space-y-6 overflow-y-auto px-4 pb-6">
         {/* Main Filters */}
         <nav className="space-y-1">
-          <NavItem 
-            icon={Home} 
-            label="All Snippets" 
-            active={activeFilter === 'all'} 
-            onClick={() => onFilterChange('all', null)}
+          <NavItem
+            icon={Home}
+            label="All Snippets"
+            active={activeFilter === "all"}
+            onClick={() => onFilterChange("all", null)}
           />
-          <NavItem 
-            icon={Star} 
-            label="Favorites" 
-            active={activeFilter === 'favorites'} 
-            onClick={() => onFilterChange('favorites', null)}
+          <NavItem
+            icon={Star}
+            label="Favorites"
+            active={activeFilter === "favorites"}
+            onClick={() => onFilterChange("favorites", null)}
           />
         </nav>
 
         {/* Folders */}
         <div>
-          <div className="flex items-center justify-between px-3 mb-2">
-            <h3 className="text-xs font-bold text-gray-400 uppercase tracking-wider flex items-center gap-2">
-              <Folder className="w-3 h-3" /> Folders
+          <div className="mb-2 flex items-center justify-between px-3">
+            <h3 className="flex items-center gap-2 text-xs font-bold tracking-wider text-gray-400 uppercase">
+              <Folder className="h-3 w-3" /> Folders
             </h3>
-            <button 
+            <button
               onClick={() => setIsAddingFolder(true)}
-              className="p-1 hover:bg-gray-200 rounded text-gray-400 hover:text-gray-600 transition-colors"
+              className="rounded p-1 text-gray-400 transition-colors hover:bg-gray-200 hover:text-gray-600"
             >
-              <Plus className="w-3 h-3" />
+              <Plus className="h-3 w-3" />
             </button>
           </div>
 
           {isAddingFolder && (
-            <form onSubmit={handleFolderSubmit} className="px-3 mb-2">
+            <form onSubmit={handleFolderSubmit} className="mb-2 px-3">
               <input
                 autoFocus
                 type="text"
@@ -92,7 +104,7 @@ const Sidebar: React.FC<SidebarProps> = ({
                 onChange={(e) => setNewFolderName(e.target.value)}
                 onBlur={() => !newFolderName && setIsAddingFolder(false)}
                 placeholder="Folder name..."
-                className="w-full px-2 py-1 text-xs border border-indigo-300 rounded outline-none focus:ring-1 focus:ring-indigo-500"
+                className="w-full rounded border border-indigo-300 px-2 py-1 text-xs outline-none focus:ring-1 focus:ring-indigo-500"
                 disabled={isCreatingFolder}
               />
             </form>
@@ -100,28 +112,34 @@ const Sidebar: React.FC<SidebarProps> = ({
 
           <div className="space-y-1">
             {folders.length === 0 && !isAddingFolder ? (
-              <p className="px-3 text-xs text-gray-400 italic">No folders created</p>
+              <p className="px-3 text-xs text-gray-400 italic">
+                No folders created
+              </p>
             ) : (
-              folders.map(folder => (
+              folders.map((folder) => (
                 <div key={folder.id} className="group/folder relative">
-                  <NavItem 
+                  <NavItem
                     icon={ChevronRight}
                     label={folder.name}
-                    active={activeFilter === 'folder' && activeId === folder.id}
-                    onClick={() => onFilterChange('folder', folder.id)}
+                    active={activeFilter === "folder" && activeId === folder.id}
+                    onClick={() => onFilterChange("folder", folder.id)}
                     compact
                   />
                   <button
                     onClick={(e) => {
                       e.stopPropagation();
-                      if (window.confirm(`Delete folder "${folder.name}"? Snippets will not be deleted.`)) {
+                      if (
+                        window.confirm(
+                          `Delete folder "${folder.name}"? Snippets will not be deleted.`,
+                        )
+                      ) {
                         onDeleteFolder(folder.id);
                       }
                     }}
-                    className="absolute right-2 top-1/2 -translate-y-1/2 p-1 text-gray-400 hover:text-red-500 opacity-0 group-hover/folder:opacity-100 transition-opacity"
+                    className="absolute top-1/2 right-2 -translate-y-1/2 p-1 text-gray-400 opacity-0 transition-opacity group-hover/folder:opacity-100 hover:text-red-500"
                     title="Delete Folder"
                   >
-                    <Trash className="w-3 h-3" />
+                    <Trash className="h-3 w-3" />
                   </button>
                 </div>
               ))
@@ -131,9 +149,9 @@ const Sidebar: React.FC<SidebarProps> = ({
 
         {/* Tags */}
         <div>
-          <div className="flex items-center justify-between px-3 mb-2">
-            <h3 className="text-xs font-bold text-gray-400 uppercase tracking-wider flex items-center gap-2">
-              <Tag className="w-3 h-3" /> Tags
+          <div className="mb-2 flex items-center justify-between px-3">
+            <h3 className="flex items-center gap-2 text-xs font-bold tracking-wider text-gray-400 uppercase">
+              <Tag className="h-3 w-3" /> Tags
             </h3>
           </div>
           <div className="flex flex-wrap gap-1 px-3">
@@ -141,27 +159,29 @@ const Sidebar: React.FC<SidebarProps> = ({
               <p className="text-xs text-gray-400 italic">No tags yet</p>
             ) : (
               <>
-                {displayedTags.map(tag => (
+                {displayedTags.map((tag) => (
                   <button
                     key={tag.id}
-                    onClick={() => onFilterChange('tag', tag.id)}
-                    className={`flex items-center gap-1 px-2 py-1 rounded text-xs font-medium transition-colors ${
-                      activeFilter === 'tag' && activeId === tag.id
-                        ? 'bg-indigo-600 text-white'
-                        : 'bg-gray-200 text-gray-600 hover:bg-gray-300'
+                    onClick={() => onFilterChange("tag", tag.id)}
+                    className={`flex items-center gap-1 rounded px-2 py-1 text-xs font-medium transition-colors ${
+                      activeFilter === "tag" && activeId === tag.id
+                        ? "bg-indigo-600 text-white"
+                        : "bg-gray-200 text-gray-600 hover:bg-gray-300"
                     }`}
                   >
-                    <Hash className="w-3 h-3" />
+                    <Hash className="h-3 w-3" />
                     {tag.name}
                   </button>
                 ))}
-                
+
                 {tags.length > TAG_LIMIT && (
                   <button
                     onClick={() => setShowAllTags(!showAllTags)}
-                    className="text-[10px] font-bold text-indigo-600 hover:text-indigo-700 px-2 py-1 transition-colors"
+                    className="px-2 py-1 text-[10px] font-bold text-indigo-600 transition-colors hover:text-indigo-700"
                   >
-                    {showAllTags ? 'Show less' : `+${tags.length - TAG_LIMIT} more`}
+                    {showAllTags
+                      ? "Show less"
+                      : `+${tags.length - TAG_LIMIT} more`}
                   </button>
                 )}
               </>
@@ -170,12 +190,12 @@ const Sidebar: React.FC<SidebarProps> = ({
         </div>
       </div>
 
-      <div className="p-4 border-t border-gray-200 bg-white">
-        <button 
+      <div className="border-t border-gray-200 bg-white p-4">
+        <button
           onClick={onNewSnippet}
-          className="w-full flex items-center justify-center gap-2 bg-indigo-600 text-white px-4 py-2 rounded-md hover:bg-indigo-700 transition-colors text-sm font-medium"
+          className="flex w-full items-center justify-center gap-2 rounded-md bg-indigo-600 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-indigo-700"
         >
-          <Plus className="w-4 h-4" />
+          <Plus className="h-4 w-4" />
           New Snippet
         </button>
       </div>
@@ -191,18 +211,26 @@ interface NavItemProps {
   compact?: boolean;
 }
 
-const NavItem: React.FC<NavItemProps> = ({ icon: Icon, label, active, onClick, compact }) => (
+const NavItem: React.FC<NavItemProps> = ({
+  icon: Icon,
+  label,
+  active,
+  onClick,
+  compact,
+}) => (
   <button
     onClick={onClick}
-    className={`w-full flex items-center gap-3 px-3 rounded-md transition-colors ${
-      compact ? 'py-1.5 text-xs' : 'py-2 text-sm'
+    className={`flex w-full items-center gap-3 rounded-md px-3 transition-colors ${
+      compact ? "py-1.5 text-xs" : "py-2 text-sm"
     } font-medium ${
       active
-        ? 'bg-indigo-50 text-indigo-700'
-        : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900'
+        ? "bg-indigo-50 text-indigo-700"
+        : "text-gray-600 hover:bg-gray-100 hover:text-gray-900"
     }`}
   >
-    <Icon className={`${compact ? 'w-3 h-3' : 'w-4 h-4'} ${active ? 'text-indigo-600' : 'text-gray-400'}`} />
+    <Icon
+      className={`${compact ? "h-3 w-3" : "h-4 w-4"} ${active ? "text-indigo-600" : "text-gray-400"}`}
+    />
     <span className="truncate">{label}</span>
   </button>
 );

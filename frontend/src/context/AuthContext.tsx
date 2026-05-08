@@ -1,7 +1,7 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
-import type { ReactNode } from 'react';
-import apiClient from '../api/client';
-import type { User } from '../services/userService';
+import React, { createContext, useContext, useState, useEffect } from "react";
+import type { ReactNode } from "react";
+import apiClient from "../api/client";
+import type { User } from "../services/userService";
 
 interface AuthContextType {
   user: User | null;
@@ -13,13 +13,15 @@ interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
+export const AuthProvider: React.FC<{ children: ReactNode }> = ({
+  children,
+}) => {
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
   const fetchCurrentUser = async () => {
     try {
-      const response = await apiClient.get<User>('/users/me');
+      const response = await apiClient.get<User>("/users/me");
       setUser(response.data);
     } catch (error) {
       setUser(null);
@@ -35,23 +37,31 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       setUser(null);
     };
 
-    window.addEventListener('auth:unauthorized', handleUnauthorized);
-    return () => window.removeEventListener('auth:unauthorized', handleUnauthorized);
+    window.addEventListener("auth:unauthorized", handleUnauthorized);
+    return () =>
+      window.removeEventListener("auth:unauthorized", handleUnauthorized);
   }, []);
 
   const login = async (email: string, password: string) => {
-    const response = await apiClient.post<User>('/users/login', { email, password });
+    const response = await apiClient.post<User>("/users/login", {
+      email,
+      password,
+    });
     setUser(response.data);
   };
 
   const register = async (email: string, password: string, name?: string) => {
-    const response = await apiClient.post<User>('/users', { email, password, name });
+    const response = await apiClient.post<User>("/users", {
+      email,
+      password,
+      name,
+    });
     setUser(response.data);
   };
 
   const logout = async () => {
     try {
-      await apiClient.post('/users/logout');
+      await apiClient.post("/users/logout");
     } finally {
       setUser(null);
     }
@@ -67,7 +77,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
 export const useAuth = () => {
   const context = useContext(AuthContext);
   if (context === undefined) {
-    throw new Error('useAuth must be used within an AuthProvider');
+    throw new Error("useAuth must be used within an AuthProvider");
   }
   return context;
 };

@@ -25,7 +25,10 @@ export interface Snippet {
   updatedAt: string;
 }
 
-export type CreateSnippetInput = Omit<Snippet, 'id' | 'tags' | 'userId' | 'createdAt' | 'updatedAt'> & {
+export type CreateSnippetInput = Omit<
+  Snippet,
+  "id" | "tags" | "userId" | "createdAt" | "updatedAt"
+> & {
   tags?: string[];
 };
 

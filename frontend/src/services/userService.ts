@@ -1,4 +1,4 @@
-import apiClient from '../api/client';
+import apiClient from "../api/client";
 
 export interface User {
   id: string;
@@ -8,7 +8,7 @@ export interface User {
 
 export const userService = {
   getAll: async (): Promise<User[]> => {
-    const response = await apiClient.get<User[]>('/users');
+    const response = await apiClient.get<User[]>("/users");
     return response.data;
   },
 };

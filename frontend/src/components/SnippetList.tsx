@@ -1,6 +1,6 @@
-import React from 'react';
-import SnippetCard from './SnippetCard';
-import type { Snippet } from '../types/snippet';
+import React from "react";
+import SnippetCard from "./SnippetCard";
+import type { Snippet } from "../types/snippet";
 
 interface SnippetListProps {
   snippets: Snippet[];
@@ -8,24 +8,30 @@ interface SnippetListProps {
   onSelectSnippet?: (snippet: Snippet) => void;
 }
 
-const SnippetList: React.FC<SnippetListProps> = ({ snippets, title = 'All Snippets', onSelectSnippet }) => {
+const SnippetList: React.FC<SnippetListProps> = ({
+  snippets,
+  title = "All Snippets",
+  onSelectSnippet,
+}) => {
   return (
     <div className="flex-1 p-8">
-      <div className="max-w-5xl mx-auto">
-        <h1 className="text-3xl font-bold mb-8 text-gray-900">{title}</h1>
-        
+      <div className="mx-auto max-w-5xl">
+        <h1 className="mb-8 text-3xl font-bold text-gray-900">{title}</h1>
+
         {snippets.length === 0 ? (
-          <div className="text-center py-12">
-            <p className="text-gray-500">No snippets found. Create your first one!</p>
+          <div className="py-12 text-center">
+            <p className="text-gray-500">
+              No snippets found. Create your first one!
+            </p>
           </div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
             {snippets.map((snippet) => (
               <div key={snippet.id} onClick={() => onSelectSnippet?.(snippet)}>
-                <SnippetCard 
+                <SnippetCard
                   title={snippet.title}
                   language={snippet.language}
-                  summary={snippet.summary || ''}
+                  summary={snippet.summary || ""}
                   tags={snippet.tags}
                 />
               </div>

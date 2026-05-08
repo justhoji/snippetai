@@ -1,9 +1,13 @@
-import apiClient from '../api/client';
-import type { Snippet, CreateSnippetInput, UpdateSnippetInput } from '../types/snippet';
+import apiClient from "../api/client";
+import type {
+  Snippet,
+  CreateSnippetInput,
+  UpdateSnippetInput,
+} from "../types/snippet";
 
 export const snippetService = {
   getAll: async (params?: Record<string, unknown>): Promise<Snippet[]> => {
-    const response = await apiClient.get<Snippet[]>('/snippets', { params });
+    const response = await apiClient.get<Snippet[]>("/snippets", { params });
     return response.data;
   },
 
@@ -13,7 +17,7 @@ export const snippetService = {
   },
 
   create: async (data: CreateSnippetInput): Promise<Snippet> => {
-    const response = await apiClient.post<Snippet>('/snippets', data);
+    const response = await apiClient.post<Snippet>("/snippets", data);
     return response.data;
   },
 

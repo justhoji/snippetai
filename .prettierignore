@@ -1,0 +1,13 @@
+node_modules
+dist
+.next
+out
+build
+*.log
+package-lock.json
+bun.lock
+yarn.lock
+pnpm-lock.yaml
+prisma/generated
+backend/generated
+frontend/dist

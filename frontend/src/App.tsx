@@ -1,3 +1,4 @@
+import React, { useEffect } from "react";
 import Layout from "./components/Layout";
 import Header from "./components/Header";
 import SnippetList from "./components/SnippetList";
@@ -45,6 +46,26 @@ function App() {
     handleDeleteFolder,
     setPage,
   } = handlers;
+
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if ((e.metaKey || e.ctrlKey) && e.key === "k") {
+        if (isFormOpen) return;
+
+        if (selectedSnippet) {
+          e.preventDefault();
+          setSelectedSnippetId(null);
+          // Wait for Header to mount then focus
+          setTimeout(() => {
+            window.dispatchEvent(new CustomEvent("focus-search"));
+          }, 0);
+        }
+      }
+    };
+
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [selectedSnippet, setSelectedSnippetId, isFormOpen]);
 
   if (authLoading) {
     return <LoadingSpinner fullScreen />;

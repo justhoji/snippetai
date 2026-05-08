@@ -1,4 +1,4 @@
-import React, { useMemo } from "react";
+import React, { useMemo, useRef, useEffect } from "react";
 import { Search, Sparkles, LogOut } from "lucide-react";
 import { useAuth } from "../context/AuthContext";
 import type { User } from "../services/userService";
@@ -19,6 +19,29 @@ const Header: React.FC<HeaderProps> = ({
   onSemanticToggle,
 }) => {
   const { logout } = useAuth();
+  const inputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      // Cmd + K or Ctrl + K
+      if ((e.metaKey || e.ctrlKey) && e.key === "k") {
+        e.preventDefault();
+        inputRef.current?.focus();
+      }
+    };
+
+    const handleFocusSearch = () => {
+      inputRef.current?.focus();
+    };
+
+    window.addEventListener("keydown", handleKeyDown);
+    window.addEventListener("focus-search", handleFocusSearch);
+
+    return () => {
+      window.removeEventListener("keydown", handleKeyDown);
+      window.removeEventListener("focus-search", handleFocusSearch);
+    };
+  }, []);
 
   const initials = useMemo(() => {
     if (!user) return "";
@@ -52,6 +75,7 @@ const Header: React.FC<HeaderProps> = ({
               }`}
             />
             <input
+              ref={inputRef}
               type="text"
               value={searchQuery}
               onChange={(e) => onSearchChange(e.target.value)}
@@ -61,12 +85,18 @@ const Header: React.FC<HeaderProps> = ({
                   : "Search snippets by keywords..."
               }
               aria-label="Search snippets"
-              className={`w-full rounded-xl border bg-gray-50 py-2 pr-4 pl-10 text-sm transition-all duration-200 outline-none focus:ring-2 focus:ring-indigo-500/10 ${
+              className={`w-full rounded-xl border bg-gray-50 py-2 pr-16 pl-10 text-sm transition-all duration-200 outline-none focus:ring-2 focus:ring-indigo-500/10 ${
                 isSemanticSearch
                   ? "border-indigo-200 bg-indigo-50/30"
                   : "border-transparent focus:border-gray-200 focus:bg-white"
               }`}
             />
+            <div className="pointer-events-none absolute top-1/2 right-3 flex -translate-y-1/2 items-center gap-1 rounded border border-gray-200 bg-white px-1.5 py-0.5 font-sans text-[10px] font-medium text-gray-400 shadow-xs">
+              <span className="text-xs">
+                {navigator.userAgent.includes("Mac") ? "⌘" : "Ctrl"}
+              </span>
+              <span>K</span>
+            </div>
           </div>
 
           <button

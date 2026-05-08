@@ -2,26 +2,24 @@ import express from "express";
 import { z } from "zod";
 import { prisma } from "../lib/prisma";
 import asyncHandler from "../middlewares/async";
+import { auth } from "../middlewares/auth";
+import type { AuthRequest } from "../middlewares/auth";
 
 const router = express.Router();
 
 const folderSchema = z.object({
   name: z.string().min(1, "Folder name is required"),
-  userId: z.uuid("Invalid User ID"),
 });
 
-const updateFolderSchema = folderSchema.partial().omit({ userId: true });
+const updateFolderSchema = folderSchema.partial();
+
+// Apply auth middleware
+router.use(auth);
 
 router.get(
   "/",
-  asyncHandler(async (req, res) => {
-    const { userId } = req.query;
-
-    if (!userId || typeof userId !== "string") {
-      return res
-        .status(400)
-        .send({ message: "userId query parameter is required" });
-    }
+  asyncHandler(async (req: AuthRequest, res) => {
+    const userId = req.userId!;
 
     const folders = await prisma.folder.findMany({
       where: { userId },
@@ -38,9 +36,10 @@ router.get(
 
 router.get(
   "/:id",
-  asyncHandler(async (req, res) => {
-    const folder = await prisma.folder.findUnique({
-      where: { id: req.params.id },
+  asyncHandler(async (req: AuthRequest, res) => {
+    const { id } = req.params;
+    const folder = await prisma.folder.findFirst({
+      where: { id: id as string, userId: req.userId },
       include: {
         snippets: true,
       },
@@ -56,18 +55,18 @@ router.get(
 
 router.post(
   "/",
-  asyncHandler(async (req, res) => {
+  asyncHandler(async (req: AuthRequest, res) => {
     const validation = folderSchema.safeParse(req.body);
     if (!validation.success) {
       return res.status(400).send(validation.error.message);
     }
 
-    const { name, userId } = validation.data;
+    const { name } = validation.data;
 
     const folder = await prisma.folder.create({
       data: {
         name,
-        userId,
+        userId: req.userId!,
       },
     });
 
@@ -77,14 +76,15 @@ router.post(
 
 router.put(
   "/:id",
-  asyncHandler(async (req, res) => {
+  asyncHandler(async (req: AuthRequest, res) => {
+    const { id } = req.params;
     const validation = updateFolderSchema.safeParse(req.body);
     if (!validation.success) {
       return res.status(400).send(validation.error.message);
     }
 
-    const folder = await prisma.folder.findUnique({
-      where: { id: req.params.id },
+    const folder = await prisma.folder.findFirst({
+      where: { id: id as string, userId: req.userId },
     });
 
     if (!folder) {
@@ -92,7 +92,7 @@ router.put(
     }
 
     const updatedFolder = await prisma.folder.update({
-      where: { id: req.params.id },
+      where: { id: id as string },
       data: validation.data,
     });
 
@@ -102,9 +102,10 @@ router.put(
 
 router.delete(
   "/:id",
-  asyncHandler(async (req, res) => {
-    const folder = await prisma.folder.findUnique({
-      where: { id: req.params.id },
+  asyncHandler(async (req: AuthRequest, res) => {
+    const { id } = req.params;
+    const folder = await prisma.folder.findFirst({
+      where: { id: id as string, userId: req.userId },
     });
 
     if (!folder) {
@@ -112,7 +113,7 @@ router.delete(
     }
 
     await prisma.folder.delete({
-      where: { id: req.params.id },
+      where: { id: id as string },
     });
 
     res.status(204).send();

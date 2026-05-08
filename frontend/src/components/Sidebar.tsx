@@ -8,6 +8,9 @@ import {
   ChevronRight,
   Hash,
   Trash,
+  Edit2,
+  Check,
+  X,
 } from "lucide-react";
 import type { Folder as FolderType, Tag as TagType } from "../types/snippet";
 
@@ -22,6 +25,7 @@ interface SidebarProps {
   ) => void;
   onNewSnippet: () => void;
   onCreateFolder: (name: string) => void;
+  onRenameFolder: (id: string, name: string) => void;
   onDeleteFolder: (id: string) => void;
   isCreatingFolder: boolean;
 }
@@ -34,11 +38,16 @@ const Sidebar: React.FC<SidebarProps> = ({
   onFilterChange,
   onNewSnippet,
   onCreateFolder,
+  onRenameFolder,
   onDeleteFolder,
   isCreatingFolder,
 }) => {
   const [isAddingFolder, setIsAddingFolder] = React.useState(false);
   const [newFolderName, setNewFolderName] = React.useState("");
+  const [editingFolderId, setEditingFolderId] = React.useState<string | null>(
+    null,
+  );
+  const [editFolderName, setEditFolderName] = React.useState("");
   const [showAllTags, setShowAllTags] = React.useState(false);
 
   const TAG_LIMIT = 10;
@@ -50,6 +59,14 @@ const Sidebar: React.FC<SidebarProps> = ({
       onCreateFolder(newFolderName.trim());
       setNewFolderName("");
       setIsAddingFolder(false);
+    }
+  };
+
+  const handleRenameSubmit = (id: string) => {
+    if (editFolderName.trim()) {
+      onRenameFolder(id, editFolderName.trim());
+      setEditingFolderId(null);
+      setEditFolderName("");
     }
   };
 
@@ -84,7 +101,7 @@ const Sidebar: React.FC<SidebarProps> = ({
         {/* Folders */}
         <div>
           <div className="mb-2 flex items-center justify-between px-3">
-            <h3 className="flex items-center gap-2 text-xs font-bold tracking-wider text-gray-400 uppercase">
+            <h3 className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-gray-400">
               <Folder className="h-3 w-3" /> Folders
             </h3>
             <button
@@ -112,35 +129,80 @@ const Sidebar: React.FC<SidebarProps> = ({
 
           <div className="space-y-1">
             {folders.length === 0 && !isAddingFolder ? (
-              <p className="px-3 text-xs text-gray-400 italic">
+              <p className="px-3 text-xs italic text-gray-400">
                 No folders created
               </p>
             ) : (
               folders.map((folder) => (
                 <div key={folder.id} className="group/folder relative">
-                  <NavItem
-                    icon={ChevronRight}
-                    label={folder.name}
-                    active={activeFilter === "folder" && activeId === folder.id}
-                    onClick={() => onFilterChange("folder", folder.id)}
-                    compact
-                  />
-                  <button
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      if (
-                        window.confirm(
-                          `Delete folder "${folder.name}"? Snippets will not be deleted.`,
-                        )
-                      ) {
-                        onDeleteFolder(folder.id);
-                      }
-                    }}
-                    className="absolute top-1/2 right-2 -translate-y-1/2 p-1 text-gray-400 opacity-0 transition-opacity group-hover/folder:opacity-100 hover:text-red-500"
-                    title="Delete Folder"
-                  >
-                    <Trash className="h-3 w-3" />
-                  </button>
+                  {editingFolderId === folder.id ? (
+                    <div className="flex items-center gap-1 px-3 py-1">
+                      <input
+                        autoFocus
+                        type="text"
+                        value={editFolderName}
+                        onChange={(e) => setEditFolderName(e.target.value)}
+                        onKeyDown={(e) => {
+                          if (e.key === "Enter") handleRenameSubmit(folder.id);
+                          if (e.key === "Escape") setEditingFolderId(null);
+                        }}
+                        className="w-full rounded border border-indigo-300 px-2 py-1 text-xs outline-none focus:ring-1 focus:ring-indigo-500"
+                      />
+                      <button
+                        onClick={() => handleRenameSubmit(folder.id)}
+                        className="p-1 text-indigo-600 hover:text-indigo-700"
+                      >
+                        <Check className="h-3 w-3" />
+                      </button>
+                      <button
+                        onClick={() => setEditingFolderId(null)}
+                        className="p-1 text-gray-400 hover:text-gray-600"
+                      >
+                        <X className="h-3 w-3" />
+                      </button>
+                    </div>
+                  ) : (
+                    <>
+                      <NavItem
+                        icon={ChevronRight}
+                        label={folder.name}
+                        active={
+                          activeFilter === "folder" && activeId === folder.id
+                        }
+                        onClick={() => onFilterChange("folder", folder.id)}
+                        compact
+                      />
+                      <div className="absolute right-2 top-1/2 flex -translate-y-1/2 items-center gap-1 opacity-0 transition-opacity group-hover/folder:opacity-100">
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setEditingFolderId(folder.id);
+                            setEditFolderName(folder.name);
+                          }}
+                          className="p-1 text-gray-400 transition-colors hover:text-indigo-600"
+                          title="Rename Folder"
+                        >
+                          <Edit2 className="h-3 w-3" />
+                        </button>
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            if (
+                              window.confirm(
+                                `Delete folder "${folder.name}"? Snippets will not be deleted.`,
+                              )
+                            ) {
+                              onDeleteFolder(folder.id);
+                            }
+                          }}
+                          className="p-1 text-gray-400 transition-colors hover:text-red-500"
+                          title="Delete Folder"
+                        >
+                          <Trash className="h-3 w-3" />
+                        </button>
+                      </div>
+                    </>
+                  )}
                 </div>
               ))
             )}
@@ -150,13 +212,13 @@ const Sidebar: React.FC<SidebarProps> = ({
         {/* Tags */}
         <div>
           <div className="mb-2 flex items-center justify-between px-3">
-            <h3 className="flex items-center gap-2 text-xs font-bold tracking-wider text-gray-400 uppercase">
+            <h3 className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-gray-400">
               <Tag className="h-3 w-3" /> Tags
             </h3>
           </div>
           <div className="flex flex-wrap gap-1 px-3">
             {tags.length === 0 ? (
-              <p className="text-xs text-gray-400 italic">No tags yet</p>
+              <p className="text-xs italic text-gray-400">No tags yet</p>
             ) : (
               <>
                 {displayedTags.map((tag) => (

@@ -10,6 +10,10 @@ export const folderService = {
     const response = await apiClient.post<Folder>("/folders", data);
     return response.data;
   },
+  update: async (id: string, data: { name: string }): Promise<Folder> => {
+    const response = await apiClient.put<Folder>(`/folders/${id}`, data);
+    return response.data;
+  },
   delete: async (id: string): Promise<void> => {
     await apiClient.delete(`/folders/${id}`);
   },

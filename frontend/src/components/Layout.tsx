@@ -14,6 +14,7 @@ interface LayoutProps {
   ) => void;
   onNewSnippet: () => void;
   onCreateFolder: (name: string) => void;
+  onRenameFolder: (id: string, name: string) => void;
   onDeleteFolder: (id: string) => void;
   isCreatingFolder: boolean;
 }
@@ -27,6 +28,7 @@ const Layout: React.FC<LayoutProps> = ({
   onFilterChange,
   onNewSnippet,
   onCreateFolder,
+  onRenameFolder,
   onDeleteFolder,
   isCreatingFolder,
 }) => {
@@ -40,6 +42,7 @@ const Layout: React.FC<LayoutProps> = ({
         onFilterChange={onFilterChange}
         onNewSnippet={onNewSnippet}
         onCreateFolder={onCreateFolder}
+        onRenameFolder={onRenameFolder}
         onDeleteFolder={onDeleteFolder}
         isCreatingFolder={isCreatingFolder}
       />

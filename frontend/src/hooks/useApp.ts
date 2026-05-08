@@ -72,6 +72,18 @@ export const useApp = () => {
     },
   });
 
+  const updateFolderMutation = useMutation({
+    mutationFn: ({ id, name }: { id: string; name: string }) =>
+      folderService.update(id, { name }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["folders"] });
+    },
+    onError: (error: unknown) => {
+      console.error("Rename folder failed:", error);
+      alert("Failed to rename folder.");
+    },
+  });
+
   const deleteFolderMutation = useMutation({
     mutationFn: (id: string) => folderService.delete(id),
     onSuccess: (_, folderId) => {
@@ -140,6 +152,8 @@ export const useApp = () => {
       handleEditSnippet,
       handleFormClose,
       handleCreateFolder: (name: string) => createFolderMutation.mutate(name),
+      handleRenameFolder: (id: string, name: string) =>
+        updateFolderMutation.mutate({ id, name }),
       handleDeleteFolder: (id: string) => deleteFolderMutation.mutate(id),
     },
   };

@@ -39,6 +39,7 @@ function App() {
     handleEditSnippet,
     handleFormClose,
     handleCreateFolder,
+    handleRenameFolder,
     handleDeleteFolder,
   } = handlers;
 
@@ -81,6 +82,7 @@ function App() {
       activeId={activeId}
       onFilterChange={handleFilterChange}
       onCreateFolder={handleCreateFolder}
+      onRenameFolder={handleRenameFolder}
       onDeleteFolder={handleDeleteFolder}
       isCreatingFolder={isCreatingFolder}
     >

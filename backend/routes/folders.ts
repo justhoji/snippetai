@@ -1,6 +1,6 @@
 import express from "express";
 import { z } from "zod";
-import { prisma } from "../lib/prisma";
+import { folderService } from "../lib/folderService";
 import asyncHandler from "../middlewares/async";
 import { auth } from "../middlewares/auth";
 import type { AuthRequest } from "../middlewares/auth";
@@ -18,17 +18,7 @@ router.use(auth);
 router.get(
   "/",
   asyncHandler(async (req: AuthRequest, res) => {
-    const userId = req.userId!;
-
-    const folders = await prisma.folder.findMany({
-      where: { userId },
-      include: {
-        _count: {
-          select: { snippets: true },
-        },
-      },
-    });
-
+    const folders = await folderService.getFolders(req.userId!);
     res.send(folders);
   }),
 );
@@ -37,12 +27,7 @@ router.get(
   "/:id",
   asyncHandler(async (req: AuthRequest, res) => {
     const { id } = req.params;
-    const folder = await prisma.folder.findFirst({
-      where: { id: id as string, userId: req.userId },
-      include: {
-        snippets: true,
-      },
-    });
+    const folder = await folderService.getFolderById(id as string, req.userId!);
 
     if (!folder) {
       return res.status(404).send({ message: "Folder not found" });
@@ -60,14 +45,10 @@ router.post(
       return res.status(400).send(validation.error.message);
     }
 
-    const { name } = validation.data;
-
-    const folder = await prisma.folder.create({
-      data: {
-        name,
-        userId: req.userId!,
-      },
-    });
+    const folder = await folderService.createFolder(
+      req.userId!,
+      validation.data,
+    );
 
     res.status(201).send(folder);
   }),
@@ -82,18 +63,15 @@ router.put(
       return res.status(400).send(validation.error.message);
     }
 
-    const folder = await prisma.folder.findFirst({
-      where: { id: id as string, userId: req.userId },
-    });
+    const updatedFolder = await folderService.updateFolder(
+      id as string,
+      req.userId!,
+      validation.data,
+    );
 
-    if (!folder) {
+    if (!updatedFolder) {
       return res.status(404).send({ message: "Folder not found" });
     }
-
-    const updatedFolder = await prisma.folder.update({
-      where: { id: id as string },
-      data: validation.data,
-    });
 
     res.send(updatedFolder);
   }),
@@ -103,17 +81,11 @@ router.delete(
   "/:id",
   asyncHandler(async (req: AuthRequest, res) => {
     const { id } = req.params;
-    const folder = await prisma.folder.findFirst({
-      where: { id: id as string, userId: req.userId },
-    });
+    const result = await folderService.deleteFolder(id as string, req.userId!);
 
-    if (!folder) {
+    if (!result) {
       return res.status(404).send({ message: "Folder not found" });
     }
-
-    await prisma.folder.delete({
-      where: { id: id as string },
-    });
 
     res.status(204).send();
   }),

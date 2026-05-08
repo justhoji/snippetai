@@ -7,13 +7,12 @@ import type { Snippet, Folder } from '../types/snippet';
 
 interface SnippetFormProps {
   snippet?: Snippet | null;
-  userId?: string;
   folders: Folder[];
   onClose: () => void;
 }
 
-const SnippetForm: React.FC<SnippetFormProps> = ({ snippet, userId, folders, onClose }) => {
-  const { state, handlers, isPending } = useSnippetForm({ snippet, userId, onClose });
+const SnippetForm: React.FC<SnippetFormProps> = ({ snippet, folders, onClose }) => {
+  const { state, handlers, isPending } = useSnippetForm({ snippet, onClose });
   const { title, language, code, tags, summary, folderId, isAiLoading } = state;
   const { 
     setTitle, 

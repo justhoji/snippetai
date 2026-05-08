@@ -1,11 +1,18 @@
+import { useState } from 'react';
 import Layout from './components/Layout';
 import Header from './components/Header';
 import SnippetList from './components/SnippetList';
 import SnippetView from './components/SnippetView';
 import SnippetForm from './components/SnippetForm';
+import Login from './components/Login';
+import Register from './components/Register';
 import { useApp } from './hooks/useApp';
+import { useAuth } from './context/AuthContext';
 
 function App() {
+  const { user, isLoading: authLoading } = useAuth();
+  const [authView, setAuthView] = useState<'login' | 'register'>('login');
+  
   const { state, handlers } = useApp();
   const { 
     selectedSnippet, 
@@ -19,7 +26,7 @@ function App() {
     tags,
     filterType,
     activeId,
-    isLoading, 
+    isLoading: appLoading, 
     snippetsError,
     isCreatingFolder
   } = state;
@@ -34,6 +41,22 @@ function App() {
     handleFormClose,
     handleCreateFolder
   } = handlers;
+
+  if (authLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-zinc-950">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600"></div>
+      </div>
+    );
+  }
+
+  if (!user) {
+    return authView === 'login' ? (
+      <Login onSwitchToRegister={() => setAuthView('register')} />
+    ) : (
+      <Register onSwitchToLogin={() => setAuthView('login')} />
+    );
+  }
 
   const handleFilterChange = (type: 'all' | 'favorites' | 'folder' | 'tag', id: string | null) => {
     setFilterType(type);
@@ -61,7 +84,7 @@ function App() {
           onSemanticToggle={setIsSemanticSearch}
         />
         
-        {isLoading ? (
+        {appLoading ? (
           <div className="flex-1 flex items-center justify-center">
             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600"></div>
           </div>
@@ -89,7 +112,6 @@ function App() {
         {isFormOpen && (
           <SnippetForm 
             snippet={editingSnippet} 
-            userId={currentUser?.id}
             folders={folders || []}
             onClose={handleFormClose} 
           />

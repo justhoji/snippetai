@@ -1,15 +1,17 @@
 import { useState, useMemo } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { snippetService } from "../services/snippetService";
-import { userService } from "../services/userService";
 import { folderService } from "../services/folderService";
 import { tagService } from "../services/tagService";
+import { useAuth } from "../context/AuthContext";
 import type { Snippet } from "../types/snippet";
 
 export type FilterType = "all" | "favorites" | "folder" | "tag";
 
 export const useApp = () => {
   const queryClient = useQueryClient();
+  const { user: currentUser } = useAuth();
+  
   const [selectedSnippetId, setSelectedSnippetId] = useState<string | null>(
     null,
   );
@@ -44,31 +46,26 @@ export const useApp = () => {
 
       return snippetService.getAll(params);
     },
+    enabled: !!currentUser,
   });
-
-  const { data: users, isLoading: usersLoading } = useQuery({
-    queryKey: ["users"],
-    queryFn: () => userService.getAll(),
-  });
-
-  const currentUser = users?.[0] || null;
 
   const { data: folders, isLoading: foldersLoading } = useQuery({
-    queryKey: ["folders", currentUser?.id],
-    queryFn: () => folderService.getAll(currentUser!.id),
-    enabled: !!currentUser?.id,
+    queryKey: ["folders"],
+    queryFn: () => folderService.getAll(""), // userId is ignored by backend now
+    enabled: !!currentUser,
   });
 
   const { data: tags, isLoading: tagsLoading } = useQuery({
     queryKey: ["tags"],
     queryFn: () => tagService.getAll(),
+    enabled: !!currentUser,
   });
 
   const createFolderMutation = useMutation({
     mutationFn: (name: string) =>
-      folderService.create({ name, userId: currentUser!.id }),
+      folderService.create({ name, userId: "" }), // userId is ignored by backend now
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["folders", currentUser?.id] });
+      queryClient.invalidateQueries({ queryKey: ["folders"] });
     },
     onError: (error: unknown) => {
       console.error("Create folder failed:", error);
@@ -100,7 +97,7 @@ export const useApp = () => {
   };
 
   const isLoading =
-    snippetsLoading || usersLoading || foldersLoading || tagsLoading;
+    snippetsLoading || foldersLoading || tagsLoading;
 
   return {
     state: {
@@ -116,7 +113,7 @@ export const useApp = () => {
       tags,
       filterType,
       activeId,
-      isLoading: isLoading || isSnippetsFetching,
+      isLoading: (isLoading || isSnippetsFetching) && !!currentUser,
       snippetsError,
       isCreatingFolder: createFolderMutation.isPending,
     },

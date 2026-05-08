@@ -6,11 +6,10 @@ import type { Snippet, CreateSnippetInput } from '../types/snippet';
 
 interface UseSnippetFormProps {
   snippet?: Snippet | null;
-  userId?: string;
   onClose: () => void;
 }
 
-export const useSnippetForm = ({ snippet, userId, onClose }: UseSnippetFormProps) => {
+export const useSnippetForm = ({ snippet, onClose }: UseSnippetFormProps) => {
   const queryClient = useQueryClient();
   const [title, setTitle] = useState(snippet?.title || '');
   const [language, setLanguage] = useState(snippet?.language.toLowerCase() || 'typescript');
@@ -72,20 +71,14 @@ export const useSnippetForm = ({ snippet, userId, onClose }: UseSnippetFormProps
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    
-    if (!userId && !snippet?.userId) {
-      alert('Error: No active user found. Please ensure at least one user exists in the database.');
-      return;
-    }
 
     const tagList = tags.split(',').map(t => t.trim()).filter(t => t !== '');
     
-    const payload: CreateSnippetInput = {
+    const payload: any = {
       title,
       language,
       code,
       summary,
-      userId: snippet?.userId || userId!,
       isFavorite: snippet?.isFavorite || false,
       folderId,
       tags: tagList,

@@ -3,6 +3,8 @@ import { z } from "zod";
 import { prisma } from "../lib/prisma";
 import asyncHandler from "../middlewares/async";
 import { aiService } from "../lib/ai";
+import { auth } from "../middlewares/auth";
+import type { AuthRequest } from "../middlewares/auth";
 
 const router = express.Router();
 
@@ -18,17 +20,20 @@ const snippetSchema = z.object({
   summary: z.string().optional(),
   isFavorite: z.boolean().optional(),
   folderId: z.uuid().nullable().optional(),
-  userId: z.uuid("Invalid User ID"),
   tags: z.array(z.string()).optional(),
 });
 
-const updateSnippetSchema = snippetSchema.partial().omit({ userId: true });
+const updateSnippetSchema = snippetSchema.partial();
+
+// Apply auth middleware to all snippet routes
+router.use(auth);
 
 // Get all snippets with search and filtering
 router.get(
   "/",
-  asyncHandler(async (req, res) => {
+  asyncHandler(async (req: AuthRequest, res) => {
     const { q, language, folderId, tag, isFavorite, sortBy, order, semantic } = req.query;
+    const userId = req.userId!;
 
     // Handle Semantic Search
     if (semantic === "true" && q && typeof q === "string") {
@@ -39,15 +44,15 @@ router.get(
         SELECT id, title, language, summary, "isFavorite", "folderId", "userId", "createdAt", "updatedAt",
                1 - (embedding <=> $1::vector) as similarity
         FROM "Snippet"
-        WHERE embedding IS NOT NULL
+        WHERE embedding IS NOT NULL AND "userId" = $2
         ORDER BY embedding <=> $1::vector
         LIMIT 20
-      `, vectorStr);
+      `, vectorStr, userId);
 
       return res.send(snippets);
     }
 
-    const where: any = {};
+    const where: any = { userId };
 
     // Keyword Search (Title, Code, Summary)
     if (q && typeof q === "string") {
@@ -100,9 +105,10 @@ router.get(
 
 router.get(
   "/:id",
-  asyncHandler(async (req, res) => {
-    const snippet = await prisma.snippet.findUnique({
-      where: { id: req.params.id },
+  asyncHandler(async (req: AuthRequest, res) => {
+    const { id } = req.params;
+    const snippet = await prisma.snippet.findFirst({
+      where: { id: id as string, userId: req.userId },
       include: {
         tags: true,
         folder: true,
@@ -119,7 +125,7 @@ router.get(
 
 router.post(
   "/",
-  asyncHandler(async (req, res) => {
+  asyncHandler(async (req: AuthRequest, res) => {
     const validation = snippetSchema.safeParse(req.body);
     if (!validation.success) {
       return res.status(400).send(validation.error.message);
@@ -132,7 +138,6 @@ router.post(
       summary,
       isFavorite,
       folderId,
-      userId,
       tags,
     } = validation.data;
 
@@ -143,7 +148,7 @@ router.post(
         code,
         summary,
         isFavorite: isFavorite ?? false,
-        userId,
+        userId: req.userId!,
         folderId: folderId ?? null,
         tags: {
           connectOrCreate: tags?.map((name) => ({
@@ -175,14 +180,15 @@ router.post(
 
 router.put(
   "/:id",
-  asyncHandler(async (req, res) => {
+  asyncHandler(async (req: AuthRequest, res) => {
+    const { id } = req.params;
     const validation = updateSnippetSchema.safeParse(req.body);
     if (!validation.success) {
       return res.status(400).send(validation.error.message);
     }
 
-    const snippet = await prisma.snippet.findUnique({
-      where: { id: req.params.id },
+    const snippet = await prisma.snippet.findFirst({
+      where: { id: id as string, userId: req.userId },
     });
 
     if (!snippet) {
@@ -192,7 +198,7 @@ router.put(
     const { tags, ...data } = validation.data;
 
     const updatedSnippet = await prisma.snippet.update({
-      where: { id: req.params.id },
+      where: { id: id as string },
       data: {
         ...data,
         tags: tags
@@ -237,9 +243,10 @@ router.put(
 
 router.delete(
   "/:id",
-  asyncHandler(async (req, res) => {
-    const snippet = await prisma.snippet.findUnique({
-      where: { id: req.params.id },
+  asyncHandler(async (req: AuthRequest, res) => {
+    const { id } = req.params;
+    const snippet = await prisma.snippet.findFirst({
+      where: { id: id as string, userId: req.userId },
     });
 
     if (!snippet) {
@@ -247,7 +254,7 @@ router.delete(
     }
 
     await prisma.snippet.delete({
-      where: { id: req.params.id },
+      where: { id: id as string },
     });
 
     res.status(204).send();

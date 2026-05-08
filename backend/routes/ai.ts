@@ -2,6 +2,7 @@ import express from 'express';
 import { aiService } from '../lib/ai';
 import asyncMiddleware from '../middlewares/async';
 import { z } from 'zod';
+import { auth } from '../middlewares/auth';
 
 const router = express.Router();
 
@@ -9,6 +10,9 @@ const codeSchema = z.object({
   code: z.string().min(1),
   language: z.string().optional(),
 });
+
+// Apply auth middleware to all AI routes
+router.use(auth);
 
 router.post('/explain', asyncMiddleware(async (req, res) => {
   const { code, language } = codeSchema.parse(req.body);

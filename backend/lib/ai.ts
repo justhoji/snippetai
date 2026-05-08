@@ -32,7 +32,7 @@ export const aiService = {
       ],
     });
 
-    return response.choices[0].message.content || 'Failed to generate explanation.';
+    return response.choices[0]?.message?.content || 'Failed to generate explanation.';
   },
 
   async suggestMetadata(code: string, language: string): Promise<AISuggestions> {
@@ -53,7 +53,7 @@ export const aiService = {
       response_format: { type: 'json_object' },
     });
 
-    const content = response.choices[0].message.content;
+    const content = response.choices[0]?.message?.content;
     if (!content) throw new Error('Failed to generate metadata suggestions.');
 
     return JSON.parse(content) as AISuggestions;
@@ -74,7 +74,7 @@ export const aiService = {
       ],
     });
 
-    return response.choices[0].message.content?.trim().toLowerCase() || 'javascript';
+    return response.choices[0]?.message?.content?.trim().toLowerCase() || 'javascript';
   },
 
   async generateEmbedding(text: string): Promise<number[]> {
@@ -83,6 +83,10 @@ export const aiService = {
       input: text,
       encoding_format: 'float',
     });
+
+    if (!response.data[0]?.embedding) {
+      throw new Error('Failed to generate embedding.');
+    }
 
     return response.data[0].embedding;
   },

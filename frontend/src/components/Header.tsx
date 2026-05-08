@@ -1,4 +1,5 @@
-import { Search, Sparkles } from 'lucide-react';
+import { Search, Sparkles, LogOut } from 'lucide-react';
+import { useAuth } from '../context/AuthContext';
 
 interface User {
   id: string;
@@ -15,6 +16,8 @@ interface HeaderProps {
 }
 
 const Header: React.FC<HeaderProps> = ({ user, searchQuery, onSearchChange, isSemanticSearch, onSemanticToggle }) => {
+  const { logout } = useAuth();
+
   const getInitials = (name: string | null, email: string) => {
     if (name) return name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2);
     return email.slice(0, 2).toUpperCase();
@@ -52,11 +55,20 @@ const Header: React.FC<HeaderProps> = ({ user, searchQuery, onSearchChange, isSe
       
       <div className="ml-auto flex items-center gap-4">
         {user ? (
-          <div className="flex items-center gap-3">
-            <span className="text-sm font-medium text-gray-700">{user.name || user.email}</span>
-            <div className="w-8 h-8 rounded-full bg-indigo-100 flex items-center justify-center text-indigo-700 text-xs font-bold border border-indigo-200">
-              {getInitials(user.name, user.email)}
+          <div className="flex items-center gap-4">
+            <div className="flex items-center gap-3">
+              <span className="text-sm font-medium text-gray-700">{user.name || user.email}</span>
+              <div className="w-8 h-8 rounded-full bg-indigo-100 flex items-center justify-center text-indigo-700 text-xs font-bold border border-indigo-200">
+                {getInitials(user.name, user.email)}
+              </div>
             </div>
+            <button 
+              onClick={logout}
+              className="p-2 text-gray-400 hover:text-red-500 transition-colors"
+              title="Logout"
+            >
+              <LogOut className="w-4 h-4" />
+            </button>
           </div>
         ) : (
           <div className="w-8 h-8 rounded-full bg-gray-100 border border-gray-200" />

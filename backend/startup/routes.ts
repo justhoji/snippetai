@@ -6,9 +6,16 @@ import folders from "../routes/folders";
 import tags from "../routes/tags";
 import ai from "../routes/ai";
 import cors from "cors";
+import cookieParser from "cookie-parser";
 
 export default function (app: express.Application) {
-  app.use(cors());
+  app.use(
+    cors({
+      origin: ["http://localhost:5173", "http://localhost:5174"],
+      credentials: true,
+    })
+  );
+  app.use(cookieParser());
   app.use(express.json());
   app.use("/api/snippets", snippets);
   app.use("/api/users", users);

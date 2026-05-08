@@ -11,7 +11,7 @@ export type FilterType = "all" | "favorites" | "folder" | "tag";
 export const useApp = () => {
   const queryClient = useQueryClient();
   const { user: currentUser } = useAuth();
-  
+
   const [selectedSnippetId, setSelectedSnippetId] = useState<string | null>(
     null,
   );
@@ -51,7 +51,7 @@ export const useApp = () => {
 
   const { data: folders, isLoading: foldersLoading } = useQuery({
     queryKey: ["folders"],
-    queryFn: () => folderService.getAll(""), // userId is ignored by backend now
+    queryFn: () => folderService.getAll(""),
     enabled: !!currentUser,
   });
 
@@ -62,8 +62,7 @@ export const useApp = () => {
   });
 
   const createFolderMutation = useMutation({
-    mutationFn: (name: string) =>
-      folderService.create({ name, userId: "" }), // userId is ignored by backend now
+    mutationFn: (name: string) => folderService.create({ name, userId: "" }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["folders"] });
     },
@@ -111,8 +110,7 @@ export const useApp = () => {
     setEditingSnippet(null);
   };
 
-  const isLoading =
-    snippetsLoading || foldersLoading || tagsLoading;
+  const isLoading = snippetsLoading || foldersLoading || tagsLoading;
 
   return {
     state: {

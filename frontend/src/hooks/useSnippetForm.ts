@@ -34,6 +34,7 @@ export const useSnippetForm = ({ snippet, onClose }: UseSnippetFormProps) => {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["snippets"] });
+      queryClient.invalidateQueries({ queryKey: ["tags"] });
       onClose();
     },
     onError: (error: unknown) => {

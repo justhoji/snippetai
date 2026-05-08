@@ -18,6 +18,7 @@ export const useSnippetView = ({ snippet, onDelete }: UseSnippetViewProps) => {
     mutationFn: () => snippetService.delete(snippet.id),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["snippets"] });
+      queryClient.invalidateQueries({ queryKey: ["tags"] });
       onDelete();
     },
     onError: (error: unknown) => {

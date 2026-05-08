@@ -6,6 +6,8 @@ import SnippetView from "./components/SnippetView";
 import SnippetForm from "./components/SnippetForm";
 import Login from "./components/Login";
 import Register from "./components/Register";
+import LoadingSpinner from "./components/common/LoadingSpinner";
+import ErrorState from "./components/common/ErrorState";
 import { useApp } from "./hooks/useApp";
 import { useAuth } from "./context/AuthContext";
 
@@ -44,11 +46,7 @@ function App() {
   } = handlers;
 
   if (authLoading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-zinc-950">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600"></div>
-      </div>
-    );
+    return <LoadingSpinner fullScreen />;
   }
 
   if (!user) {
@@ -113,16 +111,12 @@ function App() {
 
             <div className="flex-1 overflow-y-auto">
               {appLoading ? (
-                <div className="h-full flex items-center justify-center">
-                  <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600"></div>
-                </div>
+                <LoadingSpinner />
               ) : snippetsError ? (
-                <div className="h-full flex items-center justify-center text-red-500 p-8 text-center">
-                  <div className="max-w-md">
-                    <h3 className="text-lg font-bold mb-2">Connection Error</h3>
-                    <p>Could not connect to the backend API.</p>
-                  </div>
-                </div>
+                <ErrorState
+                  title="Connection Error"
+                  message="Could not connect to the backend API. Please ensure the server is running."
+                />
               ) : (
                 <SnippetList
                   snippets={filteredSnippets}

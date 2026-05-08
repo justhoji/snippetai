@@ -6,5 +6,6 @@ export default function (
   res: Response,
   next: NextFunction,
 ) {
-  return res.status(500).send("Something failed!");
+  console.error('Error:', err);
+  return res.status(500).send({ message: err.message || "Something failed!" });
 }

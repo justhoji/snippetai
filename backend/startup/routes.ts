@@ -8,6 +8,7 @@ import tags from "../routes/tags";
 import ai from "../routes/ai";
 import cors from "cors";
 import cookieParser from "cookie-parser";
+import path from "path";
 
 export default function (app: express.Application) {
   app.use(
@@ -23,6 +24,14 @@ export default function (app: express.Application) {
   app.use("/api/folders", folders);
   app.use("/api/tags", tags);
   app.use("/api/ai", ai);
+
+  // Serve static files from the frontend dist directory
+  app.use(express.static(path.join(import.meta.dir, "../../frontend/dist")));
+
+  // SPA fallback for non-API routes
+  app.get(/^(?!\/api).*/, (req, res) => {
+    res.sendFile(path.join(import.meta.dir, "../../frontend/dist/index.html"));
+  });
 
   Sentry.setupExpressErrorHandler(app);
   app.use(error);

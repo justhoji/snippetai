@@ -18,5 +18,5 @@
 ## Database & AI
 
 - **Database:** PostgreSQL (with pgvector for semantic search)
-- **AI:** OpenAI API / LangChain
-- **Environment:** Docker Compose (Local-first)
+- **AI:** OpenAI API
+- **Environment:** Docker

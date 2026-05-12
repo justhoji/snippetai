@@ -13,12 +13,14 @@ Snippet AI is a full-stack, AI-powered code snippet manager designed for modern 
 ## 🛠️ Tech Stack
 
 ### Frontend
+
 - **Framework:** React 19 with Vite
 - **Styling:** Tailwind CSS v4
 - **State Management:** TanStack Query (React Query)
 - **Editor:** CodeMirror with Shiki highlighting
 
 ### Backend
+
 - **Runtime:** Bun
 - **Framework:** Express.js
 - **ORM:** Prisma
@@ -28,6 +30,7 @@ Snippet AI is a full-stack, AI-powered code snippet manager designed for modern 
 ## 🚀 Getting Started
 
 ### Prerequisites
+
 - [Bun](https://bun.sh/) (Primary runtime and package manager)
 - [Docker](https://www.docker.com/) (For production-like local runs)
 - PostgreSQL (with `pgvector` extension enabled)
@@ -36,12 +39,14 @@ Snippet AI is a full-stack, AI-powered code snippet manager designed for modern 
 ### Local Development
 
 1. **Clone the repository:**
+
    ```bash
-   git clone <your-repo-url>
+   git clone https://github.com/justhoji/snippetai.git
    cd snippet-ai
    ```
 
 2. **Install dependencies:**
+
    ```bash
    bun install
    ```
@@ -58,6 +63,7 @@ Snippet AI is a full-stack, AI-powered code snippet manager designed for modern 
 You can run the entire stack as a single unified service using Docker:
 
 1. **Build the image:**
+
    ```bash
    docker build -t snippet-ai .
    ```
@@ -69,7 +75,7 @@ You can run the entire stack as a single unified service using Docker:
      -e DATABASE_URL="postgresql://user:pass@host.docker.internal:5432/db" \
      snippet-ai
    ```
-   *Note: Use `host.docker.internal` to connect to a database running on your host machine.*
+   _Note: Use `host.docker.internal` to connect to a database running on your host machine._
 
 ## 🚢 Deployment (Railway)
 

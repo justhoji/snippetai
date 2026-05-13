@@ -6,6 +6,14 @@ export interface SemanticSearchResult {
   similarity: number;
 }
 
+interface Snippet {
+  id: string;
+  title: string;
+  language: string;
+  code: string;
+  summary?: string | null;
+}
+
 /**
  * Service to handle snippet vector embeddings and semantic search.
  */
@@ -13,25 +21,14 @@ export const embeddingService = {
   /**
    * Prepares snippet content for embedding generation.
    */
-  getEmbeddingText(snippet: {
-    title: string;
-    language: string;
-    code: string;
-    summary?: string | null;
-  }): string {
+  getEmbeddingText(snippet: Snippet): string {
     return `Title: ${snippet.title}\nLanguage: ${snippet.language}\nSummary: ${snippet.summary || ""}\nCode:\n${snippet.code}`;
   },
 
   /**
    * Generates and stores a vector embedding for a snippet.
    */
-  async updateSnippetEmbedding(snippet: {
-    id: string;
-    title: string;
-    language: string;
-    code: string;
-    summary?: string | null;
-  }): Promise<void> {
+  async updateSnippetEmbedding(snippet: Snippet): Promise<void> {
     try {
       const text = this.getEmbeddingText(snippet);
       const embedding = await aiService.generateEmbedding(text);

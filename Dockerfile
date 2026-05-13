@@ -18,7 +18,7 @@ COPY . .
 ENV VITE_API_URL=/api
 RUN cd frontend && bun run build
 # Generate Prisma client
-RUN cd backend && bunx prisma generate
+RUN cd backend && bunx --bun prisma generate
 
 # Stage 4: Production runner
 FROM base AS release

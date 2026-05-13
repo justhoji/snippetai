@@ -53,9 +53,10 @@ Snippet AI is a full-stack, AI-powered code snippet manager designed for modern 
 
 3. **Set up Environment Variables:**
    Create `.env` files in both `/backend` and `/frontend` based on the provided `.env.example` files.
+   *Note: In the frontend `.env`, ensure `VITE_API_URL` ends with `/api` (e.g., `http://localhost:3000/api`).*
 
 4. **Run the application:**
-   - **Backend:** `cd backend && bun dev`
+   - **Backend:** `cd backend && bunx prisma generate && bun dev`
    - **Frontend:** `cd frontend && bun run dev`
 
 ### Production Run (Docker)
